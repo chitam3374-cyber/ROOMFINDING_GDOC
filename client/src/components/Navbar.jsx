@@ -26,20 +26,21 @@ export default function Navbar({ currentPage, onNavigate, onOpenSchedule }) {
       }}>
         {/* Logo + Brand */}
         <div
-          style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }}
           onClick={() => onNavigate('home')}
         >
           <img
             src="/iu-logo.png"
             alt="IU Logo"
             style={{
-              width: '44px',
-              height: '44px',
-              borderRadius: '50%',
-              border: '2px solid rgba(255,255,255,0.5)',
-              objectFit: 'cover',
+              width: '42px',
+              height: '42px',
+              borderRadius: '8px',
+              border: '1.5px solid rgba(255,255,255,0.4)',
+              objectFit: 'contain',
               background: 'white',
-              padding: '1px',
+              padding: '2px',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
             }}
             onError={e => {
               e.target.style.display = 'none';
@@ -48,10 +49,10 @@ export default function Navbar({ currentPage, onNavigate, onOpenSchedule }) {
           />
           <div style={{
             display: 'none',
-            width: '44px',
-            height: '44px',
-            borderRadius: '50%',
-            border: '2px solid rgba(255,255,255,0.6)',
+            width: '42px',
+            height: '42px',
+            borderRadius: '8px',
+            border: '1.5px solid rgba(255,255,255,0.6)',
             background: 'white',
             color: '#1e3a8a',
             fontWeight: '900',
@@ -63,7 +64,7 @@ export default function Navbar({ currentPage, onNavigate, onOpenSchedule }) {
             <div style={{ color: 'white', fontWeight: '800', fontSize: '1.1rem', lineHeight: 1.1 }}>
               IURoomPeek
             </div>
-            <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.65rem', lineHeight: 1 }}>
+            <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.68rem', lineHeight: 1, marginTop: '2px' }}>
               Hệ thống đặt phòng IU
             </div>
           </div>
