@@ -170,7 +170,7 @@ export default function RoomsPage({ student, groupSize, onNavigate }) {
                   onClick={() => setFilterBuilding(b)}
                   style={{
                     padding: '0.3rem 0.75rem',
-                    borderRadius: '8px',
+                    borderRadius: '5px',
                     border: `1.5px solid ${filterBuilding === b ? '#1e3a8a' : '#e5e7eb'}`,
                     background: filterBuilding === b ? '#1e3a8a' : 'white',
                     color: filterBuilding === b ? 'white' : '#374151',
@@ -192,7 +192,7 @@ export default function RoomsPage({ student, groupSize, onNavigate }) {
         {error && (
           <div style={{
             background: '#fef2f2', border: '1px solid #fecaca',
-            borderRadius: '10px', padding: '1rem 1.25rem',
+            borderRadius: '5px', padding: '1rem 1.25rem',
             color: '#dc2626', marginBottom: '1.5rem',
           }}>
             {error}
@@ -209,7 +209,7 @@ export default function RoomsPage({ student, groupSize, onNavigate }) {
             {[...Array(12)].map((_, i) => (
               <div key={i} style={{
                 background: '#e2e8f0',
-                borderRadius: '12px',
+                borderRadius: '5px',
                 height: '160px',
                 animation: 'shimmer 1.5s ease-in-out infinite',
                 opacity: 1 - (i % 4) * 0.1,
@@ -224,7 +224,7 @@ export default function RoomsPage({ student, groupSize, onNavigate }) {
             textAlign: 'center',
             padding: '4rem 2rem',
             background: 'white',
-            borderRadius: '14px',
+            borderRadius: '5px',
             color: '#9ca3af',
             border: '1px solid #e5e7eb',
           }}>
@@ -273,7 +273,7 @@ export default function RoomsPage({ student, groupSize, onNavigate }) {
             marginTop: '1.5rem',
             background: '#fffbeb',
             border: '1px solid #fde68a',
-            borderRadius: '10px',
+            borderRadius: '5px',
             padding: '0.875rem 1.25rem',
             fontSize: '0.875rem',
             color: '#92400e',
@@ -323,7 +323,7 @@ function RoomListItem({ room, onBook }) {
     <div style={{
       background: 'white',
       border: '1.5px solid #e5e7eb',
-      borderRadius: '10px',
+      borderRadius: '5px',
       padding: '0.875rem 1.25rem',
       display: 'flex',
       alignItems: 'center',
@@ -342,7 +342,7 @@ function RoomListItem({ room, onBook }) {
       <div style={{
         width: '44px', height: '44px',
         background: '#1e3a8a',
-        borderRadius: '10px',
+        borderRadius: '5px',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: 'white', fontWeight: '800', fontSize: '0.75rem',
         flexShrink: 0,
@@ -359,7 +359,7 @@ function RoomListItem({ room, onBook }) {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <span style={{
-          padding: '3px 10px', borderRadius: '999px',
+          padding: '3px 10px', borderRadius: '5px',
           background: available ? '#dcfce7' : '#f3f4f6',
           color: available ? '#15803d' : '#6b7280',
           fontWeight: '700', fontSize: '0.75rem',

@@ -78,7 +78,7 @@ export default function ScheduleModal({ onClose }) {
           height: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          borderRadius: '20px',
+          borderRadius: '5px',
           padding: 0,
           overflow: 'hidden',
           background: 'white',
@@ -100,7 +100,7 @@ export default function ScheduleModal({ onClose }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
-              width: '38px', height: '38px', borderRadius: '10px',
+              width: '38px', height: '38px', borderRadius: '5px',
               background: '#eff6ff', border: '1px solid #bfdbfe',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#1d4ed8'
@@ -114,7 +114,7 @@ export default function ScheduleModal({ onClose }) {
                 </span>
                 <span style={{
                   fontSize: '0.7rem', fontWeight: '700', padding: '2px 8px',
-                  borderRadius: '999px', background: '#dbeafe', color: '#1e40af'
+                  borderRadius: '5px', background: '#dbeafe', color: '#1e40af'
                 }}>
                   Google Calendar View
                 </span>
@@ -128,7 +128,7 @@ export default function ScheduleModal({ onClose }) {
               <button
                 type="button"
                 onClick={() => { if (scrollRef.current) scrollRef.current.scrollTop = HOUR_HEIGHT * 0.8; }}
-                style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#f8fafc', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
+                style={{ padding: '4px 10px', borderRadius: '5px', border: '1px solid #cbd5e1', background: '#f8fafc', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
               >
                 Hôm nay
               </button>
@@ -143,7 +143,7 @@ export default function ScheduleModal({ onClose }) {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             {/* Lọc tòa */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f1f5f9', padding: '4px 8px', borderRadius: '8px', fontSize: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f1f5f9', padding: '4px 8px', borderRadius: '5px', fontSize: '0.75rem' }}>
               <Filter size={13} color="#64748b" />
               <select
                 value={selectedBuilding}
@@ -159,13 +159,13 @@ export default function ScheduleModal({ onClose }) {
             </div>
 
             {/* Toggle Calendar vs Matrix */}
-            <div style={{ display: 'flex', background: '#f1f5f9', padding: '3px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '700' }}>
+            <div style={{ display: 'flex', background: '#f1f5f9', padding: '3px', borderRadius: '5px', fontSize: '0.75rem', fontWeight: '700' }}>
               <button
                 type="button"
                 onClick={() => setViewMode('calendar')}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '4px',
-                  padding: '4px 10px', borderRadius: '6px', border: 'none',
+                  padding: '4px 10px', borderRadius: '5px', border: 'none',
                   background: viewMode === 'calendar' ? 'white' : 'transparent',
                   color: viewMode === 'calendar' ? '#1e40af' : '#64748b',
                   boxShadow: viewMode === 'calendar' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
@@ -179,7 +179,7 @@ export default function ScheduleModal({ onClose }) {
                 onClick={() => setViewMode('matrix')}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '4px',
-                  padding: '4px 10px', borderRadius: '6px', border: 'none',
+                  padding: '4px 10px', borderRadius: '5px', border: 'none',
                   background: viewMode === 'matrix' ? 'white' : 'transparent',
                   color: viewMode === 'matrix' ? '#1e40af' : '#64748b',
                   boxShadow: viewMode === 'matrix' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
@@ -203,7 +203,7 @@ export default function ScheduleModal({ onClose }) {
         }}>
           <span>
             💡 <strong>Lịch chen ngang:</strong> Khung giờ tùy chọn như{' '}
-            <strong style={{ color: '#059669', background: '#d1fae5', padding: '1px 6px', borderRadius: '4px' }}>
+            <strong style={{ color: '#059669', background: '#d1fae5', padding: '1px 6px', borderRadius: '5px' }}>
               10h30 – 13h30 tại A1.102
             </strong>{' '}
             được trải dài tự nhiên theo trục thời gian thực.
@@ -260,7 +260,7 @@ export default function ScheduleModal({ onClose }) {
                   <div style={{ position: 'absolute', top: `${(10.75 - START_HOUR) * HOUR_HEIGHT}px`, left: 0, right: 0, zIndex: 8, display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', marginLeft: '-4px' }} />
                     <div style={{ flex: 1, height: '1.5px', background: '#ef4444' }} />
-                    <span style={{ padding: '1px 5px', borderRadius: '4px', background: '#ef4444', color: 'white', fontSize: '0.65rem', fontWeight: '800', marginRight: '6px' }}>
+                    <span style={{ padding: '1px 5px', borderRadius: '5px', background: '#ef4444', color: 'white', fontSize: '0.65rem', fontWeight: '800', marginRight: '6px' }}>
                       Hiện tại 10:45
                     </span>
                   </div>
@@ -290,7 +290,7 @@ export default function ScheduleModal({ onClose }) {
                                 height: `${height}px`,
                                 left: '4px',
                                 right: '4px',
-                                borderRadius: '8px',
+                                borderRadius: '5px',
                                 padding: '6px 8px',
                                 background: getEventBgColor(b.roomType, isCustomSpan),
                                 color: 'white',
@@ -335,7 +335,7 @@ export default function ScheduleModal({ onClose }) {
               CHẾ ĐỘ 2: BẢNG MA TRẬN 4 KHUNG GIỜ
              ========================================================================= */
           <div style={{ flex: 1, overflow: 'auto', padding: '1.25rem 1.5rem', background: '#f8fafc' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', background: 'white', borderRadius: '5px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
               <thead>
                 <tr style={{ background: '#1e3a8a', color: 'white' }}>
                   <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: '700' }}>PHÒNG</th>
@@ -357,7 +357,7 @@ export default function ScheduleModal({ onClose }) {
                         <>
                           <td style={{ padding: '8px', textAlign: 'center', background: '#dcfce7', color: '#15803d', fontWeight: '700' }}>Trống</td>
                           <td colSpan={2} style={{ padding: '6px', textAlign: 'center' }}>
-                            <div style={{ background: '#10b981', color: 'white', padding: '6px', borderRadius: '8px', fontWeight: '700', fontSize: '0.8rem' }}>
+                            <div style={{ background: '#10b981', color: 'white', padding: '6px', borderRadius: '5px', fontWeight: '700', fontSize: '0.8rem' }}>
                               {row.customBookings[0].label}
                             </div>
                           </td>
@@ -401,7 +401,7 @@ export default function ScheduleModal({ onClose }) {
         >
           <div
             style={{
-              background: 'white', borderRadius: '18px', maxWidth: '380px', width: '100%',
+              background: 'white', borderRadius: '5px', maxWidth: '380px', width: '100%',
               padding: '1.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', border: '1px solid #cbd5e1'
             }}
             onClick={e => e.stopPropagation()}
@@ -417,13 +417,13 @@ export default function ScheduleModal({ onClose }) {
               </div>
               <button
                 onClick={() => setSelectedEvent(null)}
-                style={{ border: 'none', background: '#f1f5f9', borderRadius: '6px', padding: '4px', cursor: 'pointer' }}
+                style={{ border: 'none', background: '#f1f5f9', borderRadius: '5px', padding: '4px', cursor: 'pointer' }}
               >
                 <X size={16} />
               </button>
             </div>
 
-            <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '0.82rem', display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '1.25rem' }}>
+            <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '5px', border: '1px solid #e2e8f0', fontSize: '0.82rem', display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#334155' }}>
                 <Clock size={14} color="#2563eb" />
                 <span>Thời gian: <strong>{selectedEvent.startTime} – {selectedEvent.endTime}</strong> ({selectedEvent.bookingDate})</span>
@@ -448,7 +448,7 @@ export default function ScheduleModal({ onClose }) {
             <button
               onClick={() => setSelectedEvent(null)}
               style={{
-                width: '100%', padding: '0.6rem', borderRadius: '10px',
+                width: '100%', padding: '0.6rem', borderRadius: '5px',
                 border: 'none', background: '#1e3a8a', color: 'white',
                 fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer'
               }}
