@@ -33,12 +33,13 @@ export default function Navbar({ currentPage, onNavigate, onOpenSchedule }) {
             src="/iu-logo.png"
             alt="IU Logo"
             style={{
-              width: '40px',
-              height: '40px',
+              width: '44px',
+              height: '44px',
               borderRadius: '50%',
-              border: '2px solid rgba(255,255,255,0.3)',
+              border: '2px solid rgba(255,255,255,0.5)',
               objectFit: 'cover',
               background: 'white',
+              padding: '1px',
             }}
             onError={e => {
               e.target.style.display = 'none';
@@ -47,8 +48,8 @@ export default function Navbar({ currentPage, onNavigate, onOpenSchedule }) {
           />
           <div style={{
             display: 'none',
-            width: '40px',
-            height: '40px',
+            width: '44px',
+            height: '44px',
             borderRadius: '50%',
             border: '2px solid rgba(255,255,255,0.6)',
             background: 'white',
