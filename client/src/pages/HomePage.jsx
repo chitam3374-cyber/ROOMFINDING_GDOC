@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Mail, Users, Zap, Search, AlertCircle, ArrowLeft, School, Building2, Sparkles } from 'lucide-react';
+import { Mail, Users, Zap, Search, AlertCircle, School, Building2, Sparkles } from 'lucide-react';
 import { getStudent, getActiveBooking, getRooms } from '../services/api';
 import RoomCard from '../components/RoomCard';
 import BookingBanner from '../components/BookingBanner';
@@ -167,20 +167,6 @@ export default function HomePage({ onNavigate }) {
                   borderRadius: '8px', fontSize: '0.8rem', color: '#b45309', textAlign: 'center', fontWeight: '600'
                 }}>
                   ⚠️ Bạn đang có phòng mượn chưa hoàn tất. Mỗi sinh viên chỉ được đặt 1 phòng trong cùng một thời điểm.
-                </div>
-
-                <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
-                  <button
-                    type="button"
-                    onClick={() => setShowActiveBooking(false)}
-                    style={{
-                      border: 'none', background: 'transparent', color: '#1e40af',
-                      fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer',
-                      display: 'inline-flex', alignItems: 'center', gap: '6px'
-                    }}
-                  >
-                    <ArrowLeft size={15} /> Quay lại form nhập thông tin mượn phòng
-                  </button>
                 </div>
               </div>
             ) : (
