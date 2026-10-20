@@ -59,18 +59,65 @@ export const RoomService = {
   },
 
   createBooking({ studentId, studentEmail, roomId, date, startTime, endTime, memberCount }) {
+    // 1. Kiểm tra trạng thái phạt của sinh viên
     const penaltyCheck = this.getStudentPenaltyStatus(studentId);
     if (!penaltyCheck.canBook) throw new Error(penaltyCheck.reason);
 
+    // 2. Kiểm tra xem sinh viên đã có phòng đang hoạt động chưa
     const existing = this.getStudentActiveBooking(studentId);
     if (existing) throw new Error('Sinh viên này hiện đã có phòng đang hoạt động!');
 
+    // 3. KIỂM TRA RÀNG BUỘC THỜI GIAN THỰC TẾ
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+    
+    // Lấy ngày hôm nay theo giờ địa phương (YYYY-MM-DD)
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+    const bookingDate = date || todayStr;
+
+    // Không cho đặt phòng trong ngày nếu đã sau 17:00
+    if (bookingDate === todayStr && currentHour >= 17) {
+      throw new Error('Hệ thống đã đóng cổng đặt phòng sau 17:00. Vui lòng quay lại vào ngày mai!');
+    }
+
+    // Không cho đặt lùi về khung giờ quá khứ
+    if (bookingDate === todayStr && startTime < currentTimeStr) {
+      throw new Error(`Không thể đặt phòng ở quá khứ! Giờ hiện tại là ${currentTimeStr}, vui lòng chọn khung giờ sau thời điểm này.`);
+    }
+
+    // Giới hạn giờ hoạt động từ 08:00 đến 17:00
+    if (startTime < '08:00' || endTime > '17:00' || startTime >= endTime) {
+      throw new Error('Khung giờ mượn phòng hợp lệ là từ 08:00 đến 17:00 và giờ kết thúc phải sau giờ bắt đầu!');
+    }
+
+    // 4. Kiểm tra va chạm lịch của phòng được chọn
+    const hasConflict = DB.bookings.some(b => 
+      b.roomId === roomId && 
+      b.date === bookingDate && 
+      b.status !== 'CANCELLED' && 
+      checkOverlap(startTime, endTime, b.startTime, b.endTime)
+    ) || DB.schedules.some(s => 
+      s.roomId === roomId && 
+      s.date === bookingDate && 
+      checkOverlap(startTime, endTime, s.startTime, s.endTime)
+    );
+
+    if (hasConflict) {
+      throw new Error(`Phòng ${roomId} đã có lịch đặt hoặc lịch học trong khung giờ ${startTime} - ${endTime}!`);
+    }
+
+    // 5. Tạo đơn đặt mới
     const newBooking = {
       id: 'BK' + Math.random().toString(36).substring(2, 6).toUpperCase(),
       studentId,
       studentEmail: studentEmail || `${studentId}@student.hcmiu.edu.vn`,
       roomId,
-      date: date || new Date().toISOString().split('T')[0],
+      date: bookingDate,
       startTime,
       endTime,
       memberCount: parseInt(memberCount) || 1,

@@ -97,14 +97,30 @@ export default function App() {
     }
   };
 
-  // Mở modal Đặt ngay
+  // Mở modal Đặt ngay - Tự động tính toán giờ hợp lệ theo thời gian thực
   const handleOpenBookModal = (room, isQuick = false) => {
+    const now = new Date();
+    const currentHour = now.getHours();
+
+    // 1. Sau 17:00 là đóng cổng đặt phòng trong ngày
+    if (currentHour >= 17) {
+      showToast('Hệ thống đã đóng cổng đặt phòng hôm nay sau 17:00!', 'error');
+      return;
+    }
+
+    // 2. Tự động tính khung giờ bắt đầu hợp lệ từ thời điểm hiện tại
+    const startHour = Math.max(8, currentHour);
+    const endHour = Math.min(17, startHour + 2);
+
+    const formattedStart = `${startHour.toString().padStart(2, '0')}:00`;
+    const formattedEnd = `${endHour.toString().padStart(2, '0')}:00`;
+
     setBookingModal({
       isOpen: true,
       room,
       isQuickBook: isQuick,
-      startTime: '09:00',
-      endTime: '11:00'
+      startTime: formattedStart,
+      endTime: formattedEnd
     });
   };
 
@@ -115,6 +131,27 @@ export default function App() {
 
     if (!sId) {
       showToast('Vui lòng nhập MSSV!', 'error');
+      return;
+    }
+
+    // Kiểm tra ràng buộc thời gian thực tế phía Client
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+
+    if (currentHour >= 17) {
+      showToast('Hệ thống đã đóng cổng đặt phòng sau 17:00!', 'error');
+      return;
+    }
+
+    if (bookingModal.startTime < currentTimeStr) {
+      showToast(`Không thể đặt giờ quá khứ! Hiện tại là ${currentTimeStr}`, 'error');
+      return;
+    }
+
+    if (bookingModal.startTime >= bookingModal.endTime) {
+      showToast('Giờ kết thúc phải sau giờ bắt đầu!', 'error');
       return;
     }
 
@@ -140,10 +177,11 @@ export default function App() {
       showToast(`Đặt thành công phòng ${bookingModal.room.id}!`, 'success');
       setBookingModal({ ...bookingModal, isOpen: false });
       
-      // Cập nhật lại trạng thái
+      // Đồng bộ ngay lập tức toàn bộ trạng thái hệ thống
       handleStudentAction();
       fetchMarqueeRooms();
       fetchScheduleMatrix();
+      fetchAvailableRooms();
       setActiveTab('home');
     } catch (err) {
       showToast('Lỗi gửi request!', 'error');
@@ -247,7 +285,10 @@ export default function App() {
               Phòng trống
             </button>
             <button 
-              onClick={() => setShowScheduleModal(true)}
+              onClick={() => {
+                fetchScheduleMatrix();
+                setShowScheduleModal(true);
+              }}
               className="flex items-center gap-2 border border-sky-600 text-sky-800 bg-sky-50/50 hover:bg-sky-100 px-3.5 py-1.5 rounded-lg text-sm font-medium transition shadow-sm"
             >
               <Calendar className="w-4 h-4 text-sky-700" />
@@ -434,7 +475,6 @@ export default function App() {
               {/* Băng chuyền chuyển động liên tục từ phải sang trái */}
               <div className="overflow-hidden relative w-full rounded-2xl py-2">
                 <div className="flex gap-4 animate-marquee pause-hover w-max">
-                  {/* Nhân đôi mảng để tạo vòng lặp vô tận mượt mà */}
                   {[...marqueeRooms, ...marqueeRooms].map((room, idx) => (
                     <div 
                       key={`${room.id}-${idx}`} 
@@ -552,15 +592,16 @@ export default function App() {
               </button>
             </div>
 
-            <div className="mt-4 overflow-x-auto">
+            {/* BẢNG CUỘN HIỂN THỊ ĐẦY ĐỦ 140 PHÒNG */}
+            <div className="mt-4 overflow-x-auto max-h-[65vh] overflow-y-auto border border-slate-200 rounded-xl">
               <table className="w-full text-center border-collapse">
-                <thead>
+                <thead className="sticky top-0 bg-white shadow-sm z-10">
                   <tr className="border-b border-slate-200 text-xs font-bold text-slate-600">
-                    <th className="py-3 px-4 text-left">PHÒNG</th>
-                    <th className="py-3 px-4">08:00 - 10:00</th>
-                    <th className="py-3 px-4">10:00 - 12:00</th>
-                    <th className="py-3 px-4">13:00 - 15:00</th>
-                    <th className="py-3 px-4">15:00 - 17:00</th>
+                    <th className="py-3 px-4 text-left bg-white">PHÒNG</th>
+                    <th className="py-3 px-4 bg-white">08:00 - 10:00</th>
+                    <th className="py-3 px-4 bg-white">10:00 - 12:00</th>
+                    <th className="py-3 px-4 bg-white">13:00 - 15:00</th>
+                    <th className="py-3 px-4 bg-white">15:00 - 17:00</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
