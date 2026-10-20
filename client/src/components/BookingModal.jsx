@@ -95,7 +95,7 @@ export default function BookingModal({ room, student, onClose, onSuccess }) {
             {error && (
               <div style={{
                 background: '#fef2f2', border: '1px solid #fecaca',
-                borderRadius: '5px', padding: '0.75rem 1rem',
+                borderRadius: '8px', padding: '0.75rem 1rem',
                 color: '#dc2626', fontSize: '0.85rem', marginBottom: '1rem',
                 display: 'flex', alignItems: 'center', gap: '8px'
               }}>
@@ -106,7 +106,7 @@ export default function BookingModal({ room, student, onClose, onSuccess }) {
 
             <div style={{
               background: '#eff6ff', border: '1px solid #bfdbfe',
-              borderRadius: '5px', padding: '0.75rem 1rem',
+              borderRadius: '8px', padding: '0.75rem 1rem',
               color: '#1e40af', fontSize: '0.85rem', marginBottom: '1.25rem'
             }}>
               💡 <strong>Lưu ý:</strong> Khi đặt phòng, phải có mốc giờ chọn tự do (VD: 10:45 – 11:30). Hệ thống sẽ tự động bắt lỗi nếu trùng lịch đã có trước!
@@ -160,7 +160,7 @@ export default function BookingModal({ room, student, onClose, onSuccess }) {
                     onClick={() => { setStartTime(st); setEndTime(et); }}
                     style={{
                       padding: '5px 4px',
-                      borderRadius: '5px',
+                      borderRadius: '6px',
                       fontSize: '0.75rem',
                       fontWeight: '600',
                       border: startTime === st && endTime === et ? '1.5px solid #1e40af' : '1px solid #e5e7eb',
@@ -184,7 +184,7 @@ export default function BookingModal({ room, student, onClose, onSuccess }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '100px', overflowY: 'auto' }}>
                   {bookedRanges.map((r, i) => (
                     <div key={i} style={{
-                      padding: '4px 8px', borderRadius: '5px', background: '#fef2f2', border: '1px solid #fecaca',
+                      padding: '4px 8px', borderRadius: '6px', background: '#fef2f2', border: '1px solid #fecaca',
                       fontSize: '0.75rem', color: '#b91c1c', display: 'flex', justifyContent: 'space-between'
                     }}>
                       <span>🔒 {r.startTime} – {r.endTime}</span>
@@ -213,7 +213,7 @@ export default function BookingModal({ room, student, onClose, onSuccess }) {
           BƯỚC 2: MODAL XÁC NHẬN ĐẶT PHÒNG (ĐÚNG 100% THEO ẢNH 4)
          ========================================================================= */}
       {step === 'CONFIRM' && (
-        <div className="modal-box fade-in" style={{ maxWidth: '420px', width: '90vw', borderRadius: '5px', padding: '1.5rem' }}>
+        <div className="modal-box fade-in" style={{ maxWidth: '420px', width: '90vw', borderRadius: '12px', padding: '1.5rem' }}>
           {/* Header với icon xanh dương tròn */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.25rem' }}>
             <div style={{
@@ -232,7 +232,7 @@ export default function BookingModal({ room, student, onClose, onSuccess }) {
           <div style={{
             background: '#f8fafc',
             border: '1px solid #e2e8f0',
-            borderRadius: '5px',
+            borderRadius: '10px',
             padding: '1.25rem',
             marginBottom: '1.5rem'
           }}>
@@ -255,7 +255,7 @@ export default function BookingModal({ room, student, onClose, onSuccess }) {
               onClick={() => setStep('TIME_SELECT')}
               style={{
                 padding: '0.55rem 1.4rem',
-                borderRadius: '5px',
+                borderRadius: '8px',
                 border: '1px solid #cbd5e1',
                 background: 'white',
                 color: '#475569',
@@ -272,7 +272,7 @@ export default function BookingModal({ room, student, onClose, onSuccess }) {
               disabled={loading}
               style={{
                 padding: '0.55rem 1.6rem',
-                borderRadius: '5px',
+                borderRadius: '8px',
                 border: 'none',
                 background: '#1e3a8a',
                 color: 'white',

@@ -130,7 +130,7 @@ export default function HomePage({ onNavigate }) {
         <div style={{ maxWidth: '640px', margin: '0 auto 3rem auto' }}>
           <div className="card" style={{
             padding: '2rem',
-            borderRadius: '5px',
+            borderRadius: '12px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
             border: '1px solid #e2e8f0',
             background: 'white',
@@ -164,7 +164,7 @@ export default function HomePage({ onNavigate }) {
 
                 <div style={{
                   padding: '0.75rem 1rem', background: '#fffbeb', border: '1px solid #fef3c7',
-                  borderRadius: '5px', fontSize: '0.8rem', color: '#b45309', textAlign: 'center', fontWeight: '600'
+                  borderRadius: '8px', fontSize: '0.8rem', color: '#b45309', textAlign: 'center', fontWeight: '600'
                 }}>
                   ⚠️ Bạn đang có phòng mượn chưa hoàn tất. Mỗi sinh viên chỉ được đặt 1 phòng trong cùng một thời điểm.
                 </div>
@@ -199,7 +199,7 @@ export default function HomePage({ onNavigate }) {
                       placeholder="Nhập email sinh viên của bạn (VD: ITITIU20000@student.hcmiu.edu.vn)"
                       value={emailOrMssv}
                       onChange={e => { setEmailOrMssv(e.target.value); setFormError(''); }}
-                      style={{ paddingLeft: '40px', fontSize: '0.9rem', borderRadius: '5px', background: '#f8fafc', height: '46px' }}
+                      style={{ paddingLeft: '40px', fontSize: '0.9rem', borderRadius: '8px', background: '#f8fafc', height: '46px' }}
                     />
                   </div>
                   <span style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px', display: 'block' }}>
@@ -223,7 +223,7 @@ export default function HomePage({ onNavigate }) {
                       placeholder="Số lượng thành viên (VD: 5)"
                       value={groupSize}
                       onChange={e => { setGroupSize(e.target.value); setFormError(''); }}
-                      style={{ paddingLeft: '40px', fontSize: '0.9rem', borderRadius: '5px', background: '#f8fafc', height: '46px' }}
+                      style={{ paddingLeft: '40px', fontSize: '0.9rem', borderRadius: '8px', background: '#f8fafc', height: '46px' }}
                     />
                   </div>
                 </div>
@@ -231,7 +231,7 @@ export default function HomePage({ onNavigate }) {
                 {formError && (
                   <div style={{
                     background: '#fef2f2', border: '1px solid #fecaca',
-                    borderRadius: '5px', padding: '0.75rem 1rem',
+                    borderRadius: '8px', padding: '0.75rem 1rem',
                     color: '#dc2626', fontSize: '0.85rem',
                     display: 'flex', alignItems: 'center', gap: '8px'
                   }}>
@@ -248,7 +248,7 @@ export default function HomePage({ onNavigate }) {
                     background: '#1e3a8a',
                     color: 'white',
                     border: 'none',
-                    borderRadius: '5px',
+                    borderRadius: '8px',
                     height: '48px',
                     fontWeight: '800',
                     fontSize: '0.95rem',
@@ -287,7 +287,7 @@ export default function HomePage({ onNavigate }) {
               </h2>
               <span style={{
                 fontSize: '0.75rem', fontWeight: '700', padding: '3px 10px',
-                borderRadius: '5px', background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe'
+                borderRadius: '6px', background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe'
               }}>
                 Gợi ý theo quy mô nhóm
               </span>
@@ -296,7 +296,7 @@ export default function HomePage({ onNavigate }) {
             <button
               className="btn btn-outline btn-sm"
               onClick={() => onNavigate('rooms', { groupSize: Number(groupSize) || 5 })}
-              style={{ display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '5px', fontWeight: '700' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', fontWeight: '700' }}
             >
               <Search size={14} /> Xem tất cả phòng
             </button>
@@ -304,7 +304,7 @@ export default function HomePage({ onNavigate }) {
 
           {/* Thanh lọc theo Quy mô: Phòng học 1-35 vs Giảng đường 36-150 */}
           <div style={{
-            background: 'white', padding: '0.75rem 1rem', borderRadius: '5px',
+            background: 'white', padding: '0.75rem 1rem', borderRadius: '10px',
             border: '1px solid #e2e8f0', marginBottom: '1.5rem', display: 'flex',
             alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px'
           }}>
@@ -317,7 +317,7 @@ export default function HomePage({ onNavigate }) {
                 type="button"
                 onClick={() => setScaleFilter('ALL')}
                 style={{
-                  padding: '5px 12px', borderRadius: '5px', border: 'none',
+                  padding: '5px 12px', borderRadius: '8px', border: 'none',
                   background: scaleFilter === 'ALL' ? '#1e3a8a' : '#f1f5f9',
                   color: scaleFilter === 'ALL' ? 'white' : '#475569',
                   fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer'
@@ -331,7 +331,7 @@ export default function HomePage({ onNavigate }) {
                 onClick={() => setScaleFilter('CLASSROOM')}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '6px',
-                  padding: '5px 12px', borderRadius: '5px', border: 'none',
+                  padding: '5px 12px', borderRadius: '8px', border: 'none',
                   background: scaleFilter === 'CLASSROOM' ? '#1e3a8a' : '#f1f5f9',
                   color: scaleFilter === 'CLASSROOM' ? 'white' : '#475569',
                   fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer'
@@ -345,7 +345,7 @@ export default function HomePage({ onNavigate }) {
                 onClick={() => setScaleFilter('AUDITORIUM')}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '6px',
-                  padding: '5px 12px', borderRadius: '5px', border: 'none',
+                  padding: '5px 12px', borderRadius: '8px', border: 'none',
                   background: scaleFilter === 'AUDITORIUM' ? '#1e3a8a' : '#f1f5f9',
                   color: scaleFilter === 'AUDITORIUM' ? 'white' : '#475569',
                   fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer'
@@ -356,7 +356,7 @@ export default function HomePage({ onNavigate }) {
             </div>
 
             {numGroupSize > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: '#1e40af', background: '#eff6ff', padding: '4px 10px', borderRadius: '5px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: '#1e40af', background: '#eff6ff', padding: '4px 10px', borderRadius: '6px' }}>
                 <Sparkles size={13} color="#f59e0b" />
                 <span>
                   Quy mô: <strong>{numGroupSize} người</strong> ➔ Đang gợi ý:{' '}
@@ -370,11 +370,11 @@ export default function HomePage({ onNavigate }) {
           {loadingRooms ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '1rem' }}>
               {[...Array(5)].map((_, i) => (
-                <div key={i} style={{ background: '#e2e8f0', borderRadius: '5px', height: '160px' }} />
+                <div key={i} style={{ background: '#e2e8f0', borderRadius: '10px', height: '160px' }} />
               ))}
             </div>
           ) : displayedQuickRooms.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem', background: 'white', borderRadius: '5px', color: '#94a3b8', border: '1px solid #e2e8f0' }}>
+            <div style={{ textAlign: 'center', padding: '3rem', background: 'white', borderRadius: '10px', color: '#94a3b8', border: '1px solid #e2e8f0' }}>
               Không có phòng nào phù hợp với quy mô này hiện tại.
             </div>
           ) : (

@@ -8,7 +8,7 @@ export default function RoomCard({ room, onBook, compact = false }) {
     <div
       style={{
         background: '#1e3a8a',
-        borderRadius: '5px',
+        borderRadius: '10px',
         padding: compact ? '1.1rem' : '1.25rem',
         color: 'white',
         display: 'flex',
@@ -41,7 +41,7 @@ export default function RoomCard({ room, onBook, compact = false }) {
               fontWeight: '700',
               background: 'rgba(255,255,255,0.18)',
               padding: '2px 7px',
-              borderRadius: '5px',
+              borderRadius: '6px',
               color: '#dbeafe'
             }}>
               {room.typeName || (isAuditorium ? 'Giảng đường' : 'Phòng học')}
@@ -57,7 +57,7 @@ export default function RoomCard({ room, onBook, compact = false }) {
           alignItems: 'center',
           gap: '3px',
           padding: '3px 9px',
-          borderRadius: '5px',
+          borderRadius: '6px',
           fontSize: '0.7rem',
           fontWeight: '800',
           letterSpacing: '0.5px',
@@ -95,7 +95,7 @@ export default function RoomCard({ room, onBook, compact = false }) {
             marginTop: '0.25rem',
             background: 'white',
             border: 'none',
-            borderRadius: '5px',
+            borderRadius: '8px',
             color: '#1e3a8a',
             padding: compact ? '0.45rem 0.8rem' : '0.55rem 1rem',
             fontSize: '0.85rem',

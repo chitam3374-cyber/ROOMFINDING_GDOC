@@ -35,7 +35,7 @@ export default function BookingBanner({ booking, onRefresh }) {
       className="fade-in"
       style={{
         background: 'linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%)',
-        borderRadius: '5px',
+        borderRadius: '10px',
         padding: '1.25rem 1.5rem',
         color: 'white',
         boxShadow: '0 6px 20px rgba(30,58,138,0.35)',
@@ -95,7 +95,7 @@ export default function BookingBanner({ booking, onRefresh }) {
         <div style={{
           background: 'rgba(239,68,68,0.2)',
           border: '1px solid rgba(239,68,68,0.4)',
-          borderRadius: '5px',
+          borderRadius: '8px',
           padding: '0.5rem 0.75rem',
           fontSize: '0.83rem',
           marginBottom: '0.75rem',
@@ -116,7 +116,7 @@ export default function BookingBanner({ booking, onRefresh }) {
               background: '#22c55e',
               color: 'white',
               border: 'none',
-              borderRadius: '5px',
+              borderRadius: '8px',
               padding: '0.5rem 1.1rem',
               fontWeight: '700',
               fontSize: '0.85rem',
@@ -139,7 +139,7 @@ export default function BookingBanner({ booking, onRefresh }) {
               background: 'rgba(255,255,255,0.15)',
               color: 'white',
               border: '1.5px solid rgba(255,255,255,0.4)',
-              borderRadius: '5px',
+              borderRadius: '8px',
               padding: '0.5rem 1.1rem',
               fontWeight: '700',
               fontSize: '0.85rem',
@@ -162,7 +162,7 @@ export default function BookingBanner({ booking, onRefresh }) {
               background: 'rgba(239,68,68,0.2)',
               color: '#fca5a5',
               border: '1px solid rgba(239,68,68,0.3)',
-              borderRadius: '5px',
+              borderRadius: '8px',
               padding: '0.5rem 0.9rem',
               fontWeight: '600',
               fontSize: '0.82rem',
@@ -192,7 +192,7 @@ function InfoChip({ icon, label }) {
     <div style={{
       display: 'flex', alignItems: 'center', gap: '5px',
       background: 'rgba(255,255,255,0.1)',
-      borderRadius: '5px',
+      borderRadius: '6px',
       padding: '0.3rem 0.6rem',
       fontSize: '0.8rem',
       color: 'rgba(255,255,255,0.85)',
