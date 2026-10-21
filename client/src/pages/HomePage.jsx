@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Mail, Users, Zap, Search, AlertCircle, School, Building2, Sparkles } from 'lucide-react';
 import { getStudent, getActiveBooking, getRooms } from '../services/api';
 import RoomCard from '../components/RoomCard';
@@ -19,6 +19,11 @@ export default function HomePage({ onNavigate }) {
 
   // Tab lọc quy mô: 'ALL' | 'CLASSROOM' (1 - 35 người) | 'AUDITORIUM' (36 - 150 người)
   const [scaleFilter, setScaleFilter] = useState('ALL');
+
+  // Điều khiển chạy carousel chọn phòng nhanh
+  const [direction, setDirection] = useState('ltr'); // 'ltr': trái sang phải | 'rtl': phải sang trái
+  const [isPaused, setIsPaused] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   // Load rooms on mount
   useEffect(() => {
@@ -120,6 +125,19 @@ export default function HomePage({ onNavigate }) {
     if (scaleFilter === 'AUDITORIUM') return r.type === 'AUDITORIUM';
     return true;
   });
+
+  // Chuẩn bị danh sách phòng lặp vô tận cho marquee (không bao giờ bị giật hay rỗng)
+  const marqueeRooms = useMemo(() => {
+    if (displayedQuickRooms.length === 0) return [];
+    let items = [...displayedQuickRooms];
+    while (items.length < 8) {
+      items = [...items, ...displayedQuickRooms];
+    }
+    return [...items, ...items];
+  }, [displayedQuickRooms]);
+
+  // Tốc độ lướt mượt mà ~55px/giây
+  const animDuration = Math.max(25, (marqueeRooms.length / 2) * 4.5);
 
   return (
     <div style={{ padding: '2rem 0 4rem' }}>
@@ -255,44 +273,147 @@ export default function HomePage({ onNavigate }) {
         </div>
 
         {/* =========================================================================
-            SECTION: CHỌN PHÒNG NHANH (THEO QUY MÔ PHÒNG HỌC 1-35 & GIẢNG ĐƯỜNG 36-150)
+            SECTION: CHỌN PHÒNG NHANH (CAROUSEL MARQUEE VÔ TẬN, CẮT 2 BÊN ĐỀU, LƯỚT THÌ DỪNG)
            ========================================================================= */}
-        <div id="quick-rooms-section">
+        <div id="quick-rooms-section" style={{
+          background: 'white',
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+          overflow: 'hidden',
+          padding: '1.25rem 0 0.5rem 0',
+        }}>
+          {/* Header Bar của cụm Đặt phòng nhanh */}
           <div style={{
+            padding: '0 1.5rem 1rem 1.5rem',
+            borderBottom: '1px solid #f1f5f9',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: '1rem',
             flexWrap: 'wrap',
-            gap: '12px'
+            gap: '12px',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Zap size={22} style={{ color: '#f59e0b', fill: '#f59e0b' }} />
-              <h2 style={{ color: '#0f172a', fontWeight: '800', fontSize: '1.25rem', margin: 0 }}>
-                Chọn phòng nhanh
-              </h2>
-              <span style={{
-                fontSize: '0.75rem', fontWeight: '700', padding: '3px 10px',
-                borderRadius: '6px', background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe'
+            {/* Title & Badge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '36px', height: '36px', borderRadius: '8px',
+                background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#d97706'
               }}>
-                Gợi ý theo quy mô nhóm
-              </span>
+                <Zap size={20} style={{ color: '#f59e0b', fill: '#f59e0b' }} />
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <h2 style={{ color: '#0f172a', fontWeight: '800', fontSize: '1.2rem', margin: 0 }}>
+                    Chọn phòng nhanh
+                  </h2>
+                  <span style={{
+                    fontSize: '0.72rem', fontWeight: '700', padding: '2px 8px',
+                    borderRadius: '6px', background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe'
+                  }}>
+                    {displayedQuickRooms.length} phòng khả dụng
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
+                  Trượt tự động liên tục • Rê chuột vào để dừng xem chi tiết & đặt phòng
+                </div>
+              </div>
             </div>
 
-            <button
-              className="btn btn-outline btn-sm"
-              onClick={() => onNavigate('rooms', { groupSize: Number(groupSize) || 5 })}
-              style={{ display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', fontWeight: '700' }}
-            >
-              <Search size={14} /> Xem tất cả phòng
-            </button>
+            {/* Điều khiển: Trạng thái trượt + Hướng chạy + Xem tất cả */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              {/* Badge trạng thái animation */}
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '0.75rem',
+                  fontWeight: '700',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  background: (isHovered || isPaused) ? '#fef2f2' : '#ecfdf5',
+                  color: (isHovered || isPaused) ? '#dc2626' : '#059669',
+                  border: (isHovered || isPaused) ? '1px solid #fecaca' : '1px solid #a7f3d0',
+                  transition: 'all 0.2s',
+                  userSelect: 'none'
+                }}
+              >
+                {(isHovered || isPaused) ? (
+                  <>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#dc2626' }} />
+                    <span>Đang dừng (Rê chuột ra để tiếp tục)</span>
+                  </>
+                ) : (
+                  <>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#059669' }} />
+                    <span>Đang trượt (Rê chuột vào để dừng)</span>
+                  </>
+                )}
+              </div>
+
+              {/* Bộ chuyển hướng chạy */}
+              <div style={{ display: 'flex', background: '#f1f5f9', padding: '2px', borderRadius: '6px' }}>
+                <button
+                  type="button"
+                  title="Chạy từ trái sang phải"
+                  onClick={() => setDirection('ltr')}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '5px',
+                    border: 'none',
+                    background: direction === 'ltr' ? 'white' : 'transparent',
+                    color: direction === 'ltr' ? '#1e40af' : '#64748b',
+                    fontSize: '0.75rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    boxShadow: direction === 'ltr' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                    transition: 'all 0.15s'
+                  }}
+                >
+                  Trái → Phải
+                </button>
+                <button
+                  type="button"
+                  title="Chạy từ phải sang trái"
+                  onClick={() => setDirection('rtl')}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '5px',
+                    border: 'none',
+                    background: direction === 'rtl' ? 'white' : 'transparent',
+                    color: direction === 'rtl' ? '#1e40af' : '#64748b',
+                    fontSize: '0.75rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    boxShadow: direction === 'rtl' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                    transition: 'all 0.15s'
+                  }}
+                >
+                  Phải → Trái
+                </button>
+              </div>
+
+              <button
+                className="btn btn-outline btn-sm"
+                onClick={() => onNavigate('rooms', { groupSize: Number(groupSize) || 5 })}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', fontWeight: '700', padding: '0.4rem 0.85rem' }}
+              >
+                <Search size={14} /> Tất cả phòng
+              </button>
+            </div>
           </div>
 
-          {/* Thanh lọc theo Quy mô: Phòng học 1-35 vs Giảng đường 36-150 */}
+          {/* Thanh lọc theo Quy mô */}
           <div style={{
-            background: 'white', padding: '0.75rem 1rem', borderRadius: '10px',
-            border: '1px solid #e2e8f0', marginBottom: '1.5rem', display: 'flex',
-            alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px'
+            padding: '0.75rem 1.5rem',
+            background: '#f8fafc',
+            borderBottom: '1px solid #f1f5f9',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '10px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>
@@ -303,13 +424,15 @@ export default function HomePage({ onNavigate }) {
                 type="button"
                 onClick={() => setScaleFilter('ALL')}
                 style={{
-                  padding: '5px 12px', borderRadius: '8px', border: 'none',
-                  background: scaleFilter === 'ALL' ? '#1e3a8a' : '#f1f5f9',
+                  padding: '5px 12px', borderRadius: '6px', border: 'none',
+                  background: scaleFilter === 'ALL' ? '#1e3a8a' : 'white',
                   color: scaleFilter === 'ALL' ? 'white' : '#475569',
-                  fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer'
+                  boxShadow: scaleFilter === 'ALL' ? '0 1px 4px rgba(30,58,138,0.2)' : '0 1px 2px rgba(0,0,0,0.05)',
+                  fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer',
+                  transition: 'all 0.15s'
                 }}
               >
-                Tất cả phòng
+                Tất cả ({allRooms.length})
               </button>
 
               <button
@@ -317,13 +440,15 @@ export default function HomePage({ onNavigate }) {
                 onClick={() => setScaleFilter('CLASSROOM')}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '6px',
-                  padding: '5px 12px', borderRadius: '8px', border: 'none',
-                  background: scaleFilter === 'CLASSROOM' ? '#1e3a8a' : '#f1f5f9',
+                  padding: '5px 12px', borderRadius: '6px', border: 'none',
+                  background: scaleFilter === 'CLASSROOM' ? '#1e3a8a' : 'white',
                   color: scaleFilter === 'CLASSROOM' ? 'white' : '#475569',
-                  fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer'
+                  boxShadow: scaleFilter === 'CLASSROOM' ? '0 1px 4px rgba(30,58,138,0.2)' : '0 1px 2px rgba(0,0,0,0.05)',
+                  fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer',
+                  transition: 'all 0.15s'
                 }}
               >
-                <School size={14} /> Phòng học: từ 1 → 35 người
+                <School size={14} /> Phòng học: 1 → 35 người
               </button>
 
               <button
@@ -331,13 +456,15 @@ export default function HomePage({ onNavigate }) {
                 onClick={() => setScaleFilter('AUDITORIUM')}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '6px',
-                  padding: '5px 12px', borderRadius: '8px', border: 'none',
-                  background: scaleFilter === 'AUDITORIUM' ? '#1e3a8a' : '#f1f5f9',
+                  padding: '5px 12px', borderRadius: '6px', border: 'none',
+                  background: scaleFilter === 'AUDITORIUM' ? '#1e3a8a' : 'white',
                   color: scaleFilter === 'AUDITORIUM' ? 'white' : '#475569',
-                  fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer'
+                  boxShadow: scaleFilter === 'AUDITORIUM' ? '0 1px 4px rgba(30,58,138,0.2)' : '0 1px 2px rgba(0,0,0,0.05)',
+                  fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer',
+                  transition: 'all 0.15s'
                 }}
               >
-                <Building2 size={14} /> Giảng đường: từ 36 → 150 người
+                <Building2 size={14} /> Giảng đường: 36 → 150 người
               </button>
             </div>
 
@@ -352,29 +479,88 @@ export default function HomePage({ onNavigate }) {
             )}
           </div>
 
-          {/* Danh sách phòng nhanh */}
-          {loadingRooms ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '1rem' }}>
-              {[...Array(5)].map((_, i) => (
-                <div key={i} style={{ background: '#e2e8f0', borderRadius: '10px', height: '160px' }} />
-              ))}
-            </div>
-          ) : displayedQuickRooms.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem', background: 'white', borderRadius: '10px', color: '#94a3b8', border: '1px solid #e2e8f0' }}>
-              Không có phòng nào phù hợp với quy mô này hiện tại.
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '1rem' }}>
-              {displayedQuickRooms.slice(0, 5).map(room => (
-                <RoomCard
-                  key={room.id}
-                  room={room}
-                  compact
-                  onBook={handleQuickBook}
-                />
-              ))}
-            </div>
-          )}
+          {/* VIEWPORT MARQUEE: CẮT 2 BÊN ĐỀU BẰNG GRADIENT MASK (CÂN XỨNG, KHÔNG TRÀN WEB) */}
+          <div
+            className="quick-rooms-viewport"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            style={{
+              overflow: 'hidden',
+              position: 'relative',
+              width: '100%',
+              padding: '1.25rem 0',
+              maskImage: 'linear-gradient(to right, transparent 0%, black 48px, black calc(100% - 48px), transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 48px, black calc(100% - 48px), transparent 100%)',
+            }}
+          >
+            {loadingRooms ? (
+              <div style={{ display: 'flex', gap: '16px', padding: '0 1.5rem' }}>
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} style={{ width: '265px', minWidth: '265px', height: '175px', background: '#e2e8f0', borderRadius: '10px', flexShrink: 0 }} />
+                ))}
+              </div>
+            ) : displayedQuickRooms.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
+                Không có phòng nào phù hợp với quy mô này hiện tại.
+              </div>
+            ) : (
+              <div
+                className="quick-rooms-track"
+                style={{
+                  display: 'flex',
+                  gap: '16px',
+                  width: 'max-content',
+                  animationName: direction === 'ltr' ? 'marqueeLeftToRight' : 'marqueeRightToLeft',
+                  animationDuration: `${animDuration}s`,
+                  animationTimingFunction: 'linear',
+                  animationIterationCount: 'infinite',
+                  animationPlayState: (isHovered || isPaused) ? 'paused' : 'running',
+                  willChange: 'transform'
+                }}
+              >
+                {marqueeRooms.map((room, idx) => (
+                  <div
+                    key={`${room.id}-${idx}`}
+                    style={{
+                      width: '265px',
+                      minWidth: '265px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <RoomCard
+                      room={room}
+                      compact
+                      onBook={handleQuickBook}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <style>{`
+            @keyframes marqueeLeftToRight {
+              0% {
+                transform: translateX(-50%);
+              }
+              100% {
+                transform: translateX(0%);
+              }
+            }
+
+            @keyframes marqueeRightToLeft {
+              0% {
+                transform: translateX(0%);
+              }
+              100% {
+                transform: translateX(-50%);
+              }
+            }
+
+            .quick-rooms-track:hover {
+              animation-play-state: paused !important;
+            }
+          `}</style>
         </div>
       </div>
 
