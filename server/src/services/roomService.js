@@ -66,6 +66,14 @@ export const RoomService = {
     // 2. Kiểm tra xem sinh viên đã có phòng đang hoạt động chưa
     const existing = this.getStudentActiveBooking(studentId);
     if (existing) throw new Error('Sinh viên này hiện đã có phòng đang hoạt động!');
+    
+    const startMins = toMinutes(startTime);
+    const endMins = toMinutes(endTime);
+    const duration = endMins - startMins;
+
+    if (duration < 60) {
+    throw new Error('Chưa đủ thời gian tối thiểu! Thời gian mượn phòng phải từ 60 phút trở lên.');
+    }
 
     // 3. KIỂM TRA RÀNG BUỘC THỜI GIAN THỰC TẾ
     const now = new Date();
@@ -87,7 +95,7 @@ export const RoomService = {
 
     // Không cho đặt lùi về khung giờ quá khứ
     if (bookingDate === todayStr && startTime < currentTimeStr) {
-      throw new Error(`Không thể đặt phòng ở quá khứ! Giờ hiện tại là ${currentTimeStr}, vui lòng chọn khung giờ sau thời điểm này.`);
+      throw new Error(`ERROR ${currentTimeStr}, vui lòng chọn khung giờ sau thời điểm này.`);
     }
 
     // Giới hạn giờ hoạt động từ 08:00 đến 17:00
@@ -132,6 +140,25 @@ export const RoomService = {
   confirmCheckIn(bookingId) {
     const b = DB.bookings.find(x => x.id === bookingId);
     if (!b) throw new Error('Không tìm thấy phòng!');
+
+    // Tính thời gian hiện tại ra phút
+    const now = new Date();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+
+    // Giờ bắt đầu của phòng (VD: 08:00 -> 480 phút)
+    const [startH, startM] = b.startTime.split(':').map(Number);
+    const startMins = startH * 60 + startM;
+
+    // Cửa sổ nhận phòng: Trước 10 phút (startMins - 10) đến trễ tối đa 10 phút (startMins + 10)
+    if (currentMins < startMins - 10) {
+      const waitMins = (startMins - 10) - currentMins;
+      throw new Error(`Chưa đến giờ nhận phòng! Nút sẽ kích hoạt trước giờ bắt đầu 10 phút (còn ${waitMins} phút nữa).`);
+    }
+
+    if (currentMins > startMins + 10) {
+      throw new Error('Đã quá thời hạn 10 phút nhận phòng đầu giờ!');
+    }
+
     b.status = 'CHECKED_IN';
     return b;
   },
@@ -139,6 +166,28 @@ export const RoomService = {
   confirmCheckOut(bookingId) {
     const b = DB.bookings.find(x => x.id === bookingId);
     if (!b) throw new Error('Không tìm thấy phòng!');
+
+    if (b.status !== 'CHECKED_IN') {
+      throw new Error('Bạn chưa bấm xác nhận nhận phòng nên không thể bấm trả phòng!');
+    }
+
+    const now = new Date();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+
+    // Giờ kết thúc của phòng (VD: 11:00 -> 660 phút)
+    const [endH, endM] = b.endTime.split(':').map(Number);
+    const endMins = endH * 60 + endM;
+
+    // Cửa sổ trả phòng: Từ giờ kết thúc (endMins) đến tối đa 30 phút sau (endMins + 30)
+    if (currentMins < endMins) {
+      const remainingMins = endMins - currentMins;
+      throw new Error(`Chưa đến giờ trả phòng! Nút sẽ kích hoạt khi kết thúc ca lúc ${b.endTime} (còn ${remainingMins} phút).`);
+    }
+
+    if (currentMins > endMins + 30) {
+      throw new Error('Đã quá thời hạn 30 phút trả phòng!');
+    }
+
     b.status = 'COMPLETED';
     return b;
   },
