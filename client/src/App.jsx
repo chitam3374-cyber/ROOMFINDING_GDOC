@@ -17,10 +17,20 @@ export default function App() {
   const [studentStatus, setStudentStatus] = useState(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
+  // Lấy ngày hôm nay YYYY-MM-DD theo giờ địa phương
+  const getTodayStr = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const [bookingModal, setBookingModal] = useState({
     isOpen: false,
     room: null,
     isQuickBook: false,
+    date: getTodayStr(),
     startTime: '08:00',
     endTime: '10:00'
   });
@@ -36,7 +46,7 @@ export default function App() {
     try {
       const [marquee, matrix, available] = await Promise.all([
         api.getMarqueeRooms(),
-        api.getScheduleMatrix(),
+        api.getScheduleMatrix(getTodayStr()),
         api.getAvailableRooms(memberCount)
       ]);
       setMarqueeRooms(marquee);
@@ -73,57 +83,67 @@ export default function App() {
     }
   };
 
+  // Mở Modal đặt phòng và tự tính khung giờ hợp lệ
   const handleOpenBookModal = (room, isQuick = false) => {
     const now = new Date();
     const currentHour = now.getHours();
+    const todayStr = getTodayStr();
 
-    if (currentHour >= 17) {
-      showToast('Hệ thống đã đóng cổng đặt phòng sau 17 giờ !', 'error');
-      return;
-    }
+    // Giờ bắt đầu trong khoảng 8h - 16h
+    let startHour = Math.max(8, Math.min(16, currentHour));
+    let endHour = Math.min(17, startHour + 2);
 
-    const startHour = Math.max(8, currentHour);
-    const endHour = Math.min(17, startHour + 2);
+    const formattedStart = `${startHour.toString().padStart(2, '0')}:00`;
+    const formattedEnd = `${endHour.toString().padStart(2, '0')}:00`;
 
     setBookingModal({
       isOpen: true,
       room,
       isQuickBook: isQuick,
-      startTime: `${startHour.toString().padStart(2, '0')}:00`,
-      endTime: `${endHour.toString().padStart(2, '0')}:00`
+      date: todayStr,
+      startTime: formattedStart,
+      endTime: formattedEnd
     });
   };
 
+  // Xác nhận đặt phòng với các ràng buộc 08:00 - 17:00, >= 60 phút, kiểm tra ngày
   const handleConfirmBooking = async () => {
     const sId = studentInput.trim();
     if (!sId) {
-      showToast('Vui lòng nhập MSSV!', 'error');
+      showToast('Vui lòng nhập MSSV hoặc Email!', 'error');
       return;
     }
-    // 1. Chuyển đổi giờ thành phút để tính khoảng cách
-    const [startH, startM] = bookingModal.startTime.split(':').map(Number);
-    const [endH, endM] = bookingModal.endTime.split(':').map(Number);
-    
-    const startTotal = startH * 60 + startM;
-    const endTotal = endH * 60 + endM;
-    const diffMinutes = endTotal - startTotal;
 
-    // 2. Chặn nếu chọn thời lượng dưới 60 phút
+    const { date, startTime, endTime } = bookingModal;
+
+    // 1. Kiểm tra khung giờ bắt buộc từ 08:00 đến 17:00
+    if (startTime < '08:00') {
+      showToast('Giờ bắt đầu không được sớm hơn 08:00 sáng!', 'error');
+      return;
+    }
+
+    if (endTime > '17:00') {
+      showToast('Giờ kết thúc không được trễ hơn 17:00 chiều!', 'error');
+      return;
+    }
+
+    // 2. Kiểm tra khoảng thời lượng tối thiểu 60 phút
+    const [startH, startM] = startTime.split(':').map(Number);
+    const [endH, endM] = endTime.split(':').map(Number);
+    const diffMinutes = (endH * 60 + endM) - (startH * 60 + startM);
+
     if (diffMinutes < 60) {
       showToast('Chưa đủ thời gian tối thiểu! Vui lòng đặt tối thiểu 60 phút.', 'error');
       return;
     }
-    
+
+    // 3. Kiểm tra giờ quá khứ nếu người dùng đặt phòng trong HÔM NAY
     const now = new Date();
+    const todayStr = getTodayStr();
     const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 
-    if (now.getHours() >= 17) {
-      showToast('Hệ thống đã đóng cổng đặt phòng sau 17 giờ!', 'error');
-      return;
-    }
-
-    if (bookingModal.startTime < currentTimeStr) {
-      showToast(`Không thể đặt giờ quá khứ! Hiện tại là ${currentTimeStr}`, 'error');
+    if (date === todayStr && startTime < currentTimeStr) {
+      showToast(`Không thể đặt giờ quá khứ trong hôm nay! Hiện tại là ${currentTimeStr}.`, 'error');
       return;
     }
 
@@ -131,19 +151,20 @@ export default function App() {
       await api.createBooking({
         studentId: sId,
         roomId: bookingModal.room.id,
-        startTime: bookingModal.startTime,
-        endTime: bookingModal.endTime,
+        date: date || todayStr,
+        startTime,
+        endTime,
         memberCount: parseInt(memberCount) || 1
       });
 
       showToast(`Đặt thành công phòng ${bookingModal.room.id}!`, 'success');
-      setBookingModal({ ...bookingModal, isOpen: false });
+      setBookingModal(prev => ({ ...prev, isOpen: false }));
       
       handleStudentAction();
       loadData();
       setActiveTab('home');
     } catch (err) {
-      showToast(err.message, 'error');
+      showToast(err.message || 'Lỗi khi đặt phòng!', 'error');
     }
   };
 
@@ -186,8 +207,10 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       {notification && (
-        <div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-xl shadow-xl font-medium text-white transition-all ${
-          notification.type === 'error' ? 'bg-red-600' : notification.type === 'info' ? 'bg-sky-600' : 'bg-emerald-600'
+        <div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-2xl shadow-2xl font-semibold text-white transition-all animate-in fade-in slide-in-from-top-3 ${
+          notification.type === 'error' ? 'bg-rose-600 shadow-rose-600/30' : 
+          notification.type === 'info' ? 'bg-sky-600 shadow-sky-600/30' : 
+          'bg-emerald-600 shadow-emerald-600/30'
         }`}>
           {notification.msg}
         </div>
@@ -197,7 +220,7 @@ export default function App() {
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         onOpenSchedule={() => {
-          api.getScheduleMatrix().then(setScheduleMatrix);
+          api.getScheduleMatrix(getTodayStr()).then(setScheduleMatrix);
           setShowScheduleModal(true);
         }} 
       />
@@ -229,12 +252,22 @@ export default function App() {
         )}
       </main>
 
+      {/* MODAL LỊCH PHÒNG TỔNG QUÁT CÓ ĐỒNG BỘ ĐỔI NGÀY */}
       <ScheduleModal 
         isOpen={showScheduleModal} 
         onClose={() => setShowScheduleModal(false)} 
         scheduleMatrix={scheduleMatrix} 
+        onDateChange={async (selectedDate) => {
+          try {
+            const matrix = await api.getScheduleMatrix(selectedDate);
+            setScheduleMatrix(matrix);
+          } catch (e) {
+            console.error('Lỗi tải lịch theo ngày:', e);
+          }
+        }}
       />
 
+      {/* MODAL ĐẶT PHÒNG */}
       <BookingModal 
         modalState={bookingModal}
         setModalState={setBookingModal}

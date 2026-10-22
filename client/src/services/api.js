@@ -7,9 +7,10 @@ export const api = {
     return res.json();
   },
 
-  // Lấy ma trận lịch phòng 140 phòng
-  getScheduleMatrix: async () => {
-    const res = await fetch(`${API_BASE}/rooms/schedule-matrix`);
+  // Lấy ma trận lịch 140 phòng (hỗ trợ truyền ngày dạng YYYY-MM-DD)
+  getScheduleMatrix: async (date = '') => {
+    const url = date ? `${API_BASE}/rooms/schedule-matrix?date=${date}` : `${API_BASE}/rooms/schedule-matrix`;
+    const res = await fetch(url);
     return res.json();
   },
 
