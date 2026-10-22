@@ -43,7 +43,7 @@
 Dự án cung cấp giải pháp **Website hỗ trợ đăng ký online** với giao diện thân thiện, hiện đại, tối ưu thao tác cho người dùng.
 ### Các tính năng chính (qua giao diện UI):
 1. **Trang chủ & Chọn phòng nhanh:** 
-   - Nhập thông tin nhanh: Email sinh viên (`MSSV@student.hcmiu.edu.vn`) / MSSV và số lượng thành viên nhóm[cite: 4, 5, 6].
+   - Nhập thông tin nhanh: Email sinh viên (`MSSV@student.hcmiu.edu.vn`) / MSSV và số lượng thành viên nhóm.
    - Danh sách phòng gợi ý nhanh (Phòng học nhóm A1.101, A1.102, Giảng đường A2.205, Phòng máy tính LA1.301, LA1.305, Lib.01...) hiển thị rõ sức chứa và loại phòng.
     <br>
     <p align="center">
@@ -87,7 +87,7 @@ Dự án cung cấp giải pháp **Website hỗ trợ đăng ký online** với 
 4. **Xác nhận đặt phòng (Pop-up Modal):**
    - Cho phép chọn mốc giờ điểm danh và mốc giờ trả phòng tùy chỉnh.
    - Hiển thị hộp thoại xác nhận chi tiết (Mã phòng, khung giờ) trước khi gửi yêu cầu.
-   - 
+   
      <br>
       <p align="center">
         <img src="https://github.com/Ratioliber-Nguyen/ROOMFINDING_GDOC/blob/Image-for-report/Image/announce_booking.png" 
