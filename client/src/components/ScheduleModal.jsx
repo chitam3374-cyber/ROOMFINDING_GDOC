@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Calendar, X, Search, Clock, CheckCircle2, XCircle, CalendarDays } from 'lucide-react';
+import { Calendar, X, Search, Clock, CalendarDays, CheckCircle2 } from 'lucide-react';
 
 export default function ScheduleModal({ isOpen, onClose, scheduleMatrix, onDateChange }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,12 +50,22 @@ export default function ScheduleModal({ isOpen, onClose, scheduleMatrix, onDateC
 
   if (!isOpen) return null;
 
-  const timeSlots = ['08:00 - 10:00', '10:00 - 12:00', '13:00 - 15:00', '15:00 - 17:00'];
+  // Cấu hình trục thời gian 08:00 - 17:00 (9 tiếng = 540 phút)
+  const timelineHours = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+  const DAY_START_MINUTES = 8 * 60; // 480 phút
+  const TOTAL_DAY_MINUTES = 9 * 60; // 540 phút
+
+  const toMinutes = (timeStr) => {
+    if (!timeStr) return 0;
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
+  };
+
   const activeDateObj = availableDates.find(d => d.isoDate === selectedDate) || availableDates[0];
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200/80 overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-3xl max-w-6xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200/80 overflow-hidden animate-in zoom-in-95 duration-200">
         
         {/* HEADER MODAL */}
         <div className="p-5 sm:p-6 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-slate-50/60">
@@ -65,7 +75,7 @@ export default function ScheduleModal({ isOpen, onClose, scheduleMatrix, onDateC
             </div>
             <div>
               <h3 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                Lịch phòng tổng quát
+                Dải thời gian phòng học
                 <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
                   activeDateObj?.isToday 
                     ? 'bg-sky-100 text-sky-800 border-sky-200'
@@ -75,7 +85,7 @@ export default function ScheduleModal({ isOpen, onClose, scheduleMatrix, onDateC
                 </span>
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Theo dõi tình trạng 140 phòng học theo 4 ca vận hành trong ngày
+                Theo dõi biểu đồ thời gian thực từ 08:00 đến 17:00
               </p>
             </div>
           </div>
@@ -131,73 +141,95 @@ export default function ScheduleModal({ isOpen, onClose, scheduleMatrix, onDateC
           </div>
         </div>
 
-        {/* BẢNG LỊCH PHÒNG VỚI STICKY HEADER */}
-        <div className="flex-1 overflow-x-auto overflow-y-auto max-h-[60vh] p-4 sm:p-6">
-          <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-            <table className="w-full text-center border-collapse">
-              <thead className="sticky top-0 bg-slate-900 text-white z-20 shadow-md">
-                <tr className="text-xs uppercase font-extrabold tracking-wider">
-                  <th className="py-3.5 px-6 text-left w-36 bg-slate-900 border-b border-slate-800">
-                    Phòng
-                  </th>
-                  {timeSlots.map((slot) => (
-                    <th key={slot} className="py-3.5 px-4 bg-slate-900 border-b border-slate-800">
-                      <div className="flex items-center justify-center gap-1.5 text-slate-200 font-bold">
-                        <Clock className="w-3.5 h-3.5 text-sky-400" />
-                        <span>{slot}</span>
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white text-sm font-medium">
-                {filteredMatrix.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-12 text-slate-400 text-sm font-semibold">
-                      Không tìm thấy phòng nào khớp với "{searchQuery}"
-                    </td>
-                  </tr>
-                ) : (
-                  filteredMatrix.map((row) => (
-                    <tr key={row.roomId} className="hover:bg-sky-50/50 transition-colors">
-                      <td className="py-3 px-6 text-left font-black text-slate-900 bg-slate-50/40">
-                        <span className="inline-block px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-2xs font-mono">
+        {/* BẢNG TIMELINE DẢI THỜI GIAN LIÊN TỤC */}
+        <div className="flex-1 overflow-x-auto overflow-y-auto max-h-[62vh] p-4 sm:p-6">
+          <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-xs min-w-[760px]">
+            
+            {/* THƯỚC ĐO THỜI GIAN TRÊN CÙNG (08:00 - 17:00) */}
+            <div className="sticky top-0 bg-slate-900 text-white z-20 shadow-md flex items-center py-3 px-4 border-b border-slate-800">
+              <div className="w-32 text-xs font-black uppercase tracking-wider pl-2 text-slate-300">
+                Phòng
+              </div>
+              <div className="flex-1 flex justify-between pr-2 text-[11px] font-bold text-slate-300 font-mono">
+                {timelineHours.map((hour) => (
+                  <div key={hour} className="flex flex-col items-center">
+                    <span>{hour}</span>
+                    <span className="w-0.5 h-1.5 bg-slate-600 mt-1"></span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* DANH SÁCH DẢI THỜI GIAN CỦA TỪNG PHÒNG */}
+            <div className="divide-y divide-slate-100 bg-white">
+              {filteredMatrix.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 text-sm font-semibold">
+                  Không tìm thấy phòng nào khớp với "{searchQuery}"
+                </div>
+              ) : (
+                filteredMatrix.map((row) => {
+                  const bookings = row.bookings || [];
+                  const isFullyFree = bookings.length === 0;
+
+                  return (
+                    <div key={row.roomId} className="flex items-center py-3.5 px-4 hover:bg-slate-50/80 transition-colors">
+                      {/* Cột mã phòng */}
+                      <div className="w-32 pr-4">
+                        <span className="inline-block px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 font-black text-xs font-mono shadow-2xs">
                           {row.roomId}
                         </span>
-                      </td>
+                      </div>
 
-                      {timeSlots.map((slot) => {
-                        const status = row.slots[slot];
-                        const isAvailable = status === 'Trống';
+                      {/* Thanh Timeline trải dài */}
+                      <div className="flex-1 relative h-9 bg-emerald-50/90 border border-emerald-200/90 rounded-xl overflow-hidden shadow-inner flex items-center">
+                        
+                        {/* Vạch kẻ chia giờ mờ đằng sau */}
+                        <div className="absolute inset-0 flex justify-between pointer-events-none px-0.5">
+                          {Array.from({ length: 10 }).map((_, i) => (
+                            <div key={i} className="w-px h-full border-r border-dashed border-emerald-200/50"></div>
+                          ))}
+                        </div>
 
-                        return (
-                          <td key={slot} className="py-3 px-3">
-                            <span 
-                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-2xs ${
-                                isAvailable
-                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
-                                  : 'bg-rose-50 text-rose-700 border border-rose-200/80'
-                              }`}
-                            >
-                              <span 
-                                className={`w-1.5 h-1.5 rounded-full ${
-                                  isAvailable ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
-                                }`}
-                              ></span>
-                              {status}
-                            </span>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                        {/* Nếu phòng trống cả ngày */}
+                        {isFullyFree ? (
+                          <div className="w-full text-center text-emerald-700 font-bold text-xs flex items-center justify-center gap-1.5 z-10">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span>Trống suốt ngày (08:00 - 17:00)</span>
+                          </div>
+                        ) : (
+                          // Vẽ các đoạn màu đỏ tương ứng với các khung giờ đã đặt
+                          bookings.map((b, bIdx) => {
+                            const startM = Math.max(DAY_START_MINUTES, toMinutes(b.startTime));
+                            const endM = Math.min(DAY_START_MINUTES + TOTAL_DAY_MINUTES, toMinutes(b.endTime));
+
+                            const leftPercent = Math.max(0, ((startM - DAY_START_MINUTES) / TOTAL_DAY_MINUTES) * 100);
+                            const widthPercent = Math.max(0, ((endM - startM) / TOTAL_DAY_MINUTES) * 100);
+
+                            return (
+                              <div
+                                key={bIdx}
+                                style={{ left: `${leftPercent}%`, width: `${widthPercent}%` }}
+                                className="absolute top-0 bottom-0 bg-gradient-to-r from-rose-500 to-rose-600 border-x border-rose-700/30 text-white flex items-center justify-center px-1 text-[11px] font-bold shadow-md z-10 transition-all hover:brightness-110"
+                                title={`Đã đặt: ${b.startTime} - ${b.endTime}`}
+                              >
+                                <span className="truncate drop-shadow-xs">
+                                  Đã đặt ({b.startTime} - {b.endTime})
+                                </span>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
           </div>
         </div>
 
-        {/* FOOTER MODAL */}
+        {/* FOOTER MODAL CHÚ THÍCH */}
         <div className="p-4 px-6 border-t border-slate-100 bg-slate-50/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
           <div className="flex items-center gap-2">
             <span>Đang xem lịch: <strong className="text-slate-900 font-bold">{activeDateObj?.label}</strong></span>
@@ -207,10 +239,12 @@ export default function ScheduleModal({ isOpen, onClose, scheduleMatrix, onDateC
 
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-1.5 font-semibold text-emerald-700">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Có thể đặt
+              <span className="w-3.5 h-3.5 rounded-md bg-emerald-100 border border-emerald-300 inline-block"></span>
+              Đoạn xanh: Trống (Có thể đặt)
             </span>
             <span className="flex items-center gap-1.5 font-semibold text-rose-700">
-              <XCircle className="w-4 h-4 text-rose-500" /> Đã có người đặt
+              <span className="w-3.5 h-3.5 rounded-md bg-rose-500 inline-block shadow-xs"></span>
+              Đoạn đỏ: Đã được đặt
             </span>
           </div>
         </div>

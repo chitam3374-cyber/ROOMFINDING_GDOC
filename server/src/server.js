@@ -7,7 +7,7 @@ import { RoomService } from './services/roomService.js';
 const app = express();
 const PORT = 5000;
 
-// Khởi tạo bảng và dữ liệu mẫu trong SQLite
+// Khởi tạo bảng và nạp 140 phòng vào SQLite
 initDatabase();
 
 app.use(cors());
@@ -57,7 +57,18 @@ app.post('/api/bookings', (req, res) => {
   }
 });
 
-// 6. Xác nhận đã nhận phòng (Check-in)
+// 6. HỦY ĐẶT PHÒNG (TỐI ĐA 3 LẦN / NGÀY)
+app.post('/api/bookings/:id/cancel', (req, res) => {
+  try {
+    const { studentId } = req.body;
+    const result = RoomService.cancelBooking(req.params.id, studentId);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// 7. Xác nhận đã nhận phòng (Check-in)
 app.post('/api/bookings/:id/checkin', (req, res) => {
   try {
     res.json({ success: true, booking: RoomService.confirmCheckIn(req.params.id) });
@@ -66,7 +77,7 @@ app.post('/api/bookings/:id/checkin', (req, res) => {
   }
 });
 
-// 7. Xác nhận trả phòng (Check-out)
+// 8. Xác nhận trả phòng (Check-out)
 app.post('/api/bookings/:id/checkout', (req, res) => {
   try {
     res.json({ success: true, booking: RoomService.confirmCheckOut(req.params.id) });
@@ -75,17 +86,17 @@ app.post('/api/bookings/:id/checkout', (req, res) => {
   }
 });
 
-// 8. Xử lý phạt trễ nhận phòng quá 10 phút
+// 9. Xử lý phạt trễ nhận phòng quá 10 phút
 app.post('/api/bookings/:id/timeout-noshow', (req, res) => {
   res.json({ success: true, result: RoomService.handleNoShowPenalty(req.params.id) });
 });
 
-// 9. Xử lý phạt trễ trả phòng quá 30 phút
+// 10. Xử lý phạt trễ trả phòng quá 30 phút
 app.post('/api/bookings/:id/timeout-latecheckout', (req, res) => {
   res.json({ success: true, result: RoomService.handleLateCheckOutPenalty(req.params.id) });
 });
 
-// 10. Endpoint kiểm tra trực quan database SQLite
+// 11. Endpoint debug trực tiếp database SQLite
 app.get('/api/debug/db', (req, res) => {
   const rooms = db.prepare('SELECT * FROM rooms').all();
   const bookings = db.prepare('SELECT * FROM bookings').all();

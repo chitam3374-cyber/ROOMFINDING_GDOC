@@ -61,14 +61,18 @@ export default function App() {
     loadData();
   }, []);
 
+  // Tra cứu MSSV: Tự động chuẩn hóa chữ IN HOA và cắt khoảng trắng
   const handleStudentAction = async () => {
-    if (!studentInput.trim()) {
+    const cleanId = studentInput.trim().toUpperCase();
+    if (!cleanId) {
       showToast('Vui lòng nhập MSSV hoặc Email sinh viên!', 'error');
       return;
     }
 
+    setStudentInput(cleanId);
+
     try {
-      const data = await api.checkStudent(studentInput);
+      const data = await api.checkStudent(cleanId);
       setStudentStatus(data);
 
       if (data.hasActiveBooking) {
@@ -89,7 +93,6 @@ export default function App() {
     const currentHour = now.getHours();
     const todayStr = getTodayStr();
 
-    // Giờ bắt đầu trong khoảng 8h - 16h
     let startHour = Math.max(8, Math.min(16, currentHour));
     let endHour = Math.min(17, startHour + 2);
 
@@ -106,17 +109,17 @@ export default function App() {
     });
   };
 
-  // Xác nhận đặt phòng với các ràng buộc 08:00 - 17:00, >= 60 phút, kiểm tra ngày
+  // Xác nhận đặt phòng: Chuẩn hóa MSSV in hoa & kiểm tra ràng buộc 08:00 - 17:00, >= 60 phút
   const handleConfirmBooking = async () => {
-    const sId = studentInput.trim();
+    const sId = studentInput.trim().toUpperCase();
     if (!sId) {
       showToast('Vui lòng nhập MSSV hoặc Email!', 'error');
       return;
     }
 
+    setStudentInput(sId);
     const { date, startTime, endTime } = bookingModal;
 
-    // 1. Kiểm tra khung giờ bắt buộc từ 08:00 đến 17:00
     if (startTime < '08:00') {
       showToast('Giờ bắt đầu không được sớm hơn 08:00 sáng!', 'error');
       return;
@@ -127,7 +130,6 @@ export default function App() {
       return;
     }
 
-    // 2. Kiểm tra khoảng thời lượng tối thiểu 60 phút
     const [startH, startM] = startTime.split(':').map(Number);
     const [endH, endM] = endTime.split(':').map(Number);
     const diffMinutes = (endH * 60 + endM) - (startH * 60 + startM);
@@ -137,7 +139,6 @@ export default function App() {
       return;
     }
 
-    // 3. Kiểm tra giờ quá khứ nếu người dùng đặt phòng trong HÔM NAY
     const now = new Date();
     const todayStr = getTodayStr();
     const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
@@ -168,6 +169,44 @@ export default function App() {
     }
   };
 
+  // Xử lý HỦY PHÒNG: Xóa trạng thái đơn ngay lập tức và đảm bảo trở về trang chủ
+  const handleCancelBooking = async (bId) => {
+    if (!window.confirm('Bạn có chắc chắn muốn hủy đơn đặt phòng này? (Tối đa 3 lần/ngày)')) {
+      return;
+    }
+
+    const cleanId = studentInput.trim().toUpperCase();
+
+    try {
+      const res = await api.cancelBooking(bId, cleanId);
+      showToast(`Hủy thành công! Bạn còn ${res.remainingCancels} lần hủy hôm nay.`, 'info');
+
+      // 1. Reset state ngay lập tức để ẩn banner đặt phòng và chuyển nút thành "ĐẶT PHÒNG"
+      setStudentStatus((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          hasActiveBooking: false,
+          booking: null
+        };
+      });
+
+      // 2. Tải lại dữ liệu ma trận và phòng trống
+      await loadData();
+
+      // 3. Truy vấn lại thông tin sinh viên để đồng bộ lịch sử vi phạm
+      if (cleanId) {
+        const updatedStatus = await api.checkStudent(cleanId);
+        setStudentStatus(updatedStatus);
+      }
+
+      // 4. Đảm bảo giao diện quay về trang chủ
+      setActiveTab('home');
+    } catch (err) {
+      showToast(err.message || 'Lỗi khi hủy phòng!', 'error');
+    }
+  };
+
   const handleCheckIn = async (bId) => {
     try {
       await api.checkIn(bId);
@@ -193,15 +232,32 @@ export default function App() {
   const handleTimeoutNoShow = async (bId) => {
     await api.timeoutNoShow(bId);
     showToast('Quá 10 phút không nhận phòng: Hủy phòng & phạt vi phạm!', 'error');
-    handleStudentAction();
+
+    // Reset đơn phòng khỏi giao diện khi bị phạt no-show
+    setStudentStatus((prev) => prev ? { ...prev, hasActiveBooking: false, booking: null } : null);
+
+    const cleanId = studentInput.trim().toUpperCase();
+    if (cleanId) {
+      const updatedStatus = await api.checkStudent(cleanId);
+      setStudentStatus(updatedStatus);
+    }
     loadData();
+    setActiveTab('home');
   };
 
   const handleTimeoutLateCheckOut = async (bId) => {
     await api.timeoutLateCheckout(bId);
     showToast('Lố 30 phút không trả phòng: Phạt vi phạm & giải phóng phòng!', 'error');
-    handleStudentAction();
+
+    setStudentStatus((prev) => prev ? { ...prev, hasActiveBooking: false, booking: null } : null);
+
+    const cleanId = studentInput.trim().toUpperCase();
+    if (cleanId) {
+      const updatedStatus = await api.checkStudent(cleanId);
+      setStudentStatus(updatedStatus);
+    }
     loadData();
+    setActiveTab('home');
   };
 
   return (
@@ -238,6 +294,7 @@ export default function App() {
             onOpenBookModal={handleOpenBookModal}
             onCheckIn={handleCheckIn}
             onCheckOut={handleCheckOut}
+            onCancelBooking={handleCancelBooking}
             onTimeoutNoShow={handleTimeoutNoShow}
             onTimeoutLateCheckOut={handleTimeoutLateCheckOut}
           />
@@ -252,7 +309,7 @@ export default function App() {
         )}
       </main>
 
-      {/* MODAL LỊCH PHÒNG TỔNG QUÁT CÓ ĐỒNG BỘ ĐỔI NGÀY */}
+      {/* MODAL LỊCH PHÒNG TỔNG QUÁT DẠNG TIMELINE */}
       <ScheduleModal 
         isOpen={showScheduleModal} 
         onClose={() => setShowScheduleModal(false)} 

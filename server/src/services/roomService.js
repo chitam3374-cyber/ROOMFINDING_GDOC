@@ -7,13 +7,20 @@ const toMinutes = (timeStr) => {
   return h * 60 + m;
 };
 
+// Hàm chuẩn hóa MSSV: Cắt khoảng trắng thừa và viết in hoa toàn bộ
+const normalizeStudentId = (id) => {
+  if (!id) return '';
+  return id.trim().toUpperCase();
+};
+
 export const RoomService = {
   // 1. Kiểm tra trạng thái chế tài & phạt của sinh viên
   getStudentPenaltyStatus(studentId) {
-    const student = db.prepare('SELECT * FROM penalties WHERE studentId = ?').get(studentId);
+    const sId = normalizeStudentId(studentId);
+    const student = db.prepare('SELECT * FROM penalties WHERE UPPER(studentId) = ?').get(sId);
     if (!student) return { canBook: true, violations: [] };
 
-    const logs = db.prepare('SELECT date, reason FROM penalty_logs WHERE studentId = ? ORDER BY id DESC').all(studentId);
+    const logs = db.prepare('SELECT date, reason FROM penalty_logs WHERE UPPER(studentId) = ? ORDER BY id DESC').all(sId);
 
     if (student.isBannedPermanent) {
       return { canBook: false, reason: 'MSSV đã bị KHÓA VĨNH VIỄN do vi phạm nhiều lần.', violations: logs };
@@ -32,12 +39,13 @@ export const RoomService = {
 
   // 2. Lấy đơn đặt phòng đang active của sinh viên
   getStudentActiveBooking(studentId) {
+    const sId = normalizeStudentId(studentId);
     return db.prepare(`
       SELECT * FROM bookings 
-      WHERE (studentId = ? OR LOWER(studentEmail) = LOWER(?)) 
+      WHERE (UPPER(studentId) = ? OR UPPER(studentEmail) LIKE ?) 
         AND status IN ('BOOKED', 'CHECKED_IN')
       LIMIT 1
-    `).get(studentId, studentId);
+    `).get(sId, `${sId}%`);
   },
 
   // 3. Lấy phòng trống cho băng chuyền Marquee
@@ -50,7 +58,7 @@ export const RoomService = {
     `).all();
   },
 
-  // 4. Lấy ma trận 140 phòng theo ngày được chọn
+  // 4. Lấy dữ liệu Dải thời gian (Timeline) cho 140 phòng theo ngày được chọn
   getScheduleMatrix(targetDate) {
     const allRooms = db.prepare('SELECT id FROM rooms ORDER BY id ASC').all();
     const bookings = db.prepare(`
@@ -59,29 +67,18 @@ export const RoomService = {
       WHERE date = ? AND status != 'CANCELLED'
     `).all(targetDate);
 
-    const slotsConfig = [
-      { label: '08:00 - 10:00', start: '08:00', end: '10:00' },
-      { label: '10:00 - 12:00', start: '10:00', end: '12:00' },
-      { label: '13:00 - 15:00', start: '13:00', end: '15:00' },
-      { label: '15:00 - 17:00', start: '15:00', end: '17:00' }
-    ];
-
     return allRooms.map(({ id: roomId }) => {
-      const row = { roomId, slots: {} };
+      const roomBookings = bookings
+        .filter(b => b.roomId === roomId)
+        .map(b => ({
+          startTime: b.startTime,
+          endTime: b.endTime
+        }));
 
-      slotsConfig.forEach(slot => {
-        const slotStartMins = toMinutes(slot.start);
-        const slotEndMins = toMinutes(slot.end);
-
-        const isBooked = bookings.some(b => {
-          if (b.roomId !== roomId) return false;
-          return toMinutes(b.startTime) < slotEndMins && toMinutes(b.endTime) > slotStartMins;
-        });
-
-        row.slots[slot.label] = isBooked ? 'Đã đặt' : 'Trống';
-      });
-
-      return row;
+      return {
+        roomId,
+        bookings: roomBookings
+      };
     });
   },
 
@@ -114,15 +111,16 @@ export const RoomService = {
 
   // 6. Tạo đơn đặt phòng
   createBooking({ studentId, studentEmail, roomId, date, startTime, endTime, memberCount }) {
+    const sId = normalizeStudentId(studentId);
+
     // 1. Kiểm tra trạng thái chế tài của sinh viên
-    const penaltyCheck = this.getStudentPenaltyStatus(studentId);
+    const penaltyCheck = this.getStudentPenaltyStatus(sId);
     if (!penaltyCheck.canBook) throw new Error(penaltyCheck.reason);
 
     // 2. Kiểm tra xem sinh viên đã có phòng đang hoạt động chưa
-    const existing = this.getStudentActiveBooking(studentId);
+    const existing = this.getStudentActiveBooking(sId);
     if (existing) throw new Error('Sinh viên này hiện đã có phòng đang hoạt động!');
 
-    // 3. Khóa cứng khung giờ vận hành từ 08:00 đến 17:00
     if (startTime < '08:00') {
       throw new Error('Hệ thống chỉ mở cửa từ 08:00 sáng! Không được đặt sớm hơn.');
     }
@@ -133,14 +131,12 @@ export const RoomService = {
       throw new Error('Giờ kết thúc phải sau giờ bắt đầu!');
     }
 
-    // 4. Kiểm tra thời lượng tối thiểu 60 phút
     const startMins = toMinutes(startTime);
     const endMins = toMinutes(endTime);
     if (endMins - startMins < 60) {
       throw new Error('Chưa đủ thời gian tối thiểu! Thời gian mượn phòng phải từ 60 phút trở lên.');
     }
 
-    // 5. Kiểm tra giờ quá khứ trong cùng ngày
     const now = new Date();
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
@@ -156,7 +152,6 @@ export const RoomService = {
       throw new Error(`ERROR ${currentTimeStr}, vui lòng chọn khung giờ sau thời điểm này.`);
     }
 
-    // 6. Kiểm tra va chạm lịch phòng trong SQLite
     const activeBookings = db.prepare(`
       SELECT startTime, endTime FROM bookings 
       WHERE roomId = ? AND date = ? AND status != 'CANCELLED'
@@ -170,11 +165,15 @@ export const RoomService = {
       throw new Error(`Phòng ${roomId} đã có người đặt trong khung giờ ${startTime} - ${endTime}!`);
     }
 
-    // 7. Lưu đơn đặt phòng mới vào SQLite
+    // Chuẩn hóa email
+    const emailToSave = studentEmail 
+      ? studentEmail.trim().toLowerCase() 
+      : `${sId.toLowerCase()}@student.hcmiu.edu.vn`;
+
     const newBooking = {
       id: 'BK' + Math.random().toString(36).substring(2, 6).toUpperCase(),
-      studentId,
-      studentEmail: studentEmail || `${studentId}@student.hcmiu.edu.vn`,
+      studentId: sId, // Lưu chuẩn dạng IN HOA
+      studentEmail: emailToSave,
       roomId,
       date: bookingDate,
       startTime,
@@ -193,7 +192,47 @@ export const RoomService = {
     return newBooking;
   },
 
-  // 7. Xác nhận nhận phòng
+  // 7. HỦY ĐẶT PHÒNG (GIỚI HẠN TỐI ĐA 3 LẦN TRONG NGÀY)
+  cancelBooking(bookingId, studentId) {
+    const b = db.prepare('SELECT * FROM bookings WHERE id = ?').get(bookingId);
+    if (!b) throw new Error('Không tìm thấy thông tin đơn đặt phòng!');
+
+    if (b.status !== 'BOOKED') {
+      throw new Error('Chỉ có thể hủy phòng khi ở trạng thái ĐÃ ĐẶT (chưa nhận phòng)!');
+    }
+
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const targetStudent = normalizeStudentId(studentId || b.studentId);
+
+    const countRow = db.prepare(`
+      SELECT COUNT(*) as cancelCount 
+      FROM bookings 
+      WHERE UPPER(studentId) = ? AND status = 'CANCELLED' AND date = ?
+    `).get(targetStudent, todayStr);
+
+    if (countRow.cancelCount >= 3) {
+      throw new Error('Bạn đã đạt giới hạn hủy phòng tối đa (3 lần/ngày)! Vui lòng liên hệ ban quản lý nếu cần hỗ trợ.');
+    }
+
+    db.prepare("UPDATE bookings SET status = 'CANCELLED' WHERE id = ?").run(bookingId);
+
+    db.prepare(`
+      INSERT INTO penalty_logs (studentId, date, reason)
+      VALUES (?, ?, ?)
+    `).run(
+      targetStudent, 
+      new Date().toLocaleString('vi-VN'), 
+      `Hủy đặt phòng ${b.roomId} (Lần ${countRow.cancelCount + 1}/3 trong ngày)`
+    );
+
+    return { 
+      success: true, 
+      remainingCancels: 3 - (countRow.cancelCount + 1) 
+    };
+  },
+
+  // 8. Xác nhận nhận phòng
   confirmCheckIn(bookingId) {
     const b = db.prepare('SELECT * FROM bookings WHERE id = ?').get(bookingId);
     if (!b) throw new Error('Không tìm thấy phòng!');
@@ -217,7 +256,7 @@ export const RoomService = {
     return b;
   },
 
-  // 8. Xác nhận trả phòng
+  // 9. Xác nhận trả phòng
   confirmCheckOut(bookingId) {
     const b = db.prepare('SELECT * FROM bookings WHERE id = ?').get(bookingId);
     if (!b) throw new Error('Không tìm thấy phòng!');
@@ -245,15 +284,15 @@ export const RoomService = {
     return b;
   },
 
-  // 9. Xử lý phạt vi phạm No-Show
+  // 10. Xử lý phạt vi phạm No-Show
   handleNoShowPenalty(bookingId) {
     const b = db.prepare('SELECT * FROM bookings WHERE id = ?').get(bookingId);
     if (!b) return;
 
     db.prepare("UPDATE bookings SET status = 'CANCELLED' WHERE id = ?").run(bookingId);
-    const sId = b.studentId;
+    const sId = normalizeStudentId(b.studentId);
 
-    let p = db.prepare('SELECT * FROM penalties WHERE studentId = ?').get(sId);
+    let p = db.prepare('SELECT * FROM penalties WHERE UPPER(studentId) = ?').get(sId);
     if (!p) {
       db.prepare(`
         INSERT INTO penalties (studentId, noShowCount, lateCheckoutCount, banUntil, isBannedPermanent)
@@ -281,7 +320,7 @@ export const RoomService = {
     db.prepare(`
       UPDATE penalties 
       SET noShowCount = ?, banUntil = ?, isBannedPermanent = ? 
-      WHERE studentId = ?
+      WHERE UPPER(studentId) = ?
     `).run(newNoShow, banUntil, isBannedPermanent, sId);
 
     db.prepare(`
@@ -292,15 +331,15 @@ export const RoomService = {
     return { booking: { ...b, status: 'CANCELLED' } };
   },
 
-  // 10. Xử lý phạt vi phạm trả phòng trễ
+  // 11. Xử lý phạt vi phạm trả phòng trễ
   handleLateCheckOutPenalty(bookingId) {
     const b = db.prepare('SELECT * FROM bookings WHERE id = ?').get(bookingId);
     if (!b) return;
 
     db.prepare("UPDATE bookings SET status = 'COMPLETED' WHERE id = ?").run(bookingId);
-    const sId = b.studentId;
+    const sId = normalizeStudentId(b.studentId);
 
-    let p = db.prepare('SELECT * FROM penalties WHERE studentId = ?').get(sId);
+    let p = db.prepare('SELECT * FROM penalties WHERE UPPER(studentId) = ?').get(sId);
     if (!p) {
       db.prepare(`
         INSERT INTO penalties (studentId, noShowCount, lateCheckoutCount, banUntil, isBannedPermanent)
@@ -331,7 +370,7 @@ export const RoomService = {
     db.prepare(`
       UPDATE penalties 
       SET lateCheckoutCount = ?, banUntil = ?, isBannedPermanent = ? 
-      WHERE studentId = ?
+      WHERE UPPER(studentId) = ?
     `).run(newLate, banUntil, isBannedPermanent, sId);
 
     db.prepare(`

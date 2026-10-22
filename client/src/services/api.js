@@ -1,3 +1,4 @@
+// client/src/services/api.js
 const API_BASE = 'http://localhost:5000/api';
 
 export const api = {
@@ -35,6 +36,18 @@ export const api = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Đặt phòng thất bại');
+    return data;
+  },
+
+  // Hủy đặt phòng (tối đa 3 lần/ngày)
+  cancelBooking: async (bookingId, studentId) => {
+    const res = await fetch(`${API_BASE}/bookings/${bookingId}/cancel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Hủy đặt phòng thất bại');
     return data;
   },
 

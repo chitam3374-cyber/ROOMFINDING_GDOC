@@ -2,7 +2,8 @@ import React from 'react';
 import { CheckCircle, Clock, Users, Key, DoorClosed } from 'lucide-react';
 
 export default function BookingBanner({ booking, onCheckIn, onCheckOut, onTimeoutNoShow, onTimeoutLateCheckOut }) {
-  if (!booking) return null;
+  // Ẩn hoàn toàn khung banner nếu không có đơn hoặc đơn đã bị hủy
+  if (!booking || booking.status === 'CANCELLED') return null;
 
   // Tính cửa sổ thời gian kích hoạt nút
   const getTimeWindowStatus = () => {
