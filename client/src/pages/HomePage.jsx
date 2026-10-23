@@ -1,578 +1,280 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Mail, Users, Zap, Search, AlertCircle, School, Building2, Sparkles } from 'lucide-react';
-import { getStudent, getActiveBooking, getRooms } from '../services/api';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Users, ArrowRight, ShieldAlert, CheckCircle, Ban, AlertTriangle, Sparkles, LogIn, UserPlus, Clock } from 'lucide-react';
 import RoomCard from '../components/RoomCard';
 import BookingBanner from '../components/BookingBanner';
-import BookingModal from '../components/BookingModal';
 
-export default function HomePage({ onNavigate }) {
-  const [emailOrMssv, setEmailOrMssv] = useState('ITITIU20000@student.hcmiu.edu.vn');
-  const [groupSize, setGroupSize] = useState('5');
-  const [student, setStudent] = useState(null);
-  const [activeBooking, setActiveBooking] = useState(null);
-  const [showActiveBooking, setShowActiveBooking] = useState(false);
-  const [allRooms, setAllRooms] = useState([]);
-  const [loadingRooms, setLoadingRooms] = useState(true);
-  const [formLoading, setFormLoading] = useState(false);
-  const [formError, setFormError] = useState('');
-  const [bookingRoom, setBookingRoom] = useState(null);
+export default function HomePage({
+  studentInput, setStudentInput,
+  memberCount, setMemberCount,
+  studentStatus, handleStudentAction,
+  marqueeRooms, onOpenBookModal,
+  onCheckIn, onCheckOut, onCancelBooking,
+  onTimeoutNoShow, onTimeoutLateCheckOut,
+  simulatedTime,
+  currentUser,
+  onOpenAuth,
+  onLogout
+}) {
+  // Đồng hồ thời gian thực tế / thời gian giả lập DevMode
+  const [clockDate, setClockDate] = useState(() => new Date());
 
-  // Tab lọc quy mô: 'ALL' | 'CLASSROOM' (1 - 35 người) | 'AUDITORIUM' (36 - 150 người)
-  const [scaleFilter, setScaleFilter] = useState('ALL');
-
-  // Điều khiển chạy carousel chọn phòng nhanh
-  const [direction, setDirection] = useState('ltr'); // 'ltr': trái sang phải | 'rtl': phải sang trái
-  const [isPaused, setIsPaused] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-
-  // Load rooms on mount
   useEffect(() => {
-    getRooms()
-      .then(setAllRooms)
-      .catch(() => setAllRooms([]))
-      .finally(() => setLoadingRooms(false));
+    const interval = setInterval(() => setClockDate(new Date()), 1000);
+    return () => clearInterval(interval);
   }, []);
 
-  // Tự động đồng bộ tab quy mô theo số lượng người nhập trong form
-  const numGroupSize = Number(groupSize) || 0;
-  useEffect(() => {
-    if (numGroupSize > 0 && numGroupSize <= 35) {
-      setScaleFilter('CLASSROOM');
-    } else if (numGroupSize >= 36) {
-      setScaleFilter('AUDITORIUM');
+  // Lấy thứ trong tuần và ngày tháng theo format giao diện điện thoại (VD: Thứ Sáu, 23 tháng 10)
+  const phoneDateFormatted = useMemo(() => {
+    const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+    const d = clockDate;
+    const dayOfWeek = days[d.getDay()];
+    const day = d.getDate();
+    const month = d.getMonth() + 1;
+    return `${dayOfWeek}, ${day} tháng ${month}`;
+  }, [clockDate]);
+
+  // Giờ và phút dạng 00:00 và giây dạng :00
+  const { phoneTimeHM, phoneTimeS } = useMemo(() => {
+    let h, m, s;
+    if (simulatedTime) {
+      const parts = simulatedTime.split(':').map(Number);
+      h = String(parts[0] || 0).padStart(2, '0');
+      m = String(parts[1] || 0).padStart(2, '0');
+      s = String(parts[2] || 0).padStart(2, '0');
     } else {
-      setScaleFilter('ALL');
+      h = String(clockDate.getHours()).padStart(2, '0');
+      m = String(clockDate.getMinutes()).padStart(2, '0');
+      s = String(clockDate.getSeconds()).padStart(2, '0');
     }
-  }, [groupSize]);
-
-  // Load active booking
-  const loadActiveBooking = useCallback(async (studentIdOrEmail) => {
-    try {
-      const b = await getActiveBooking(studentIdOrEmail);
-      setActiveBooking(b);
-      return b;
-    } catch {
-      setActiveBooking(null);
-      return null;
-    }
-  }, []);
-
-  // Xử lý khi bấm nút → ĐẶT PHÒNG
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const clean = emailOrMssv.trim();
-    const size = parseInt(groupSize, 10);
-
-    if (!clean) { setFormError('Vui lòng nhập Email hoặc MSSV'); return; }
-    if (!groupSize || isNaN(size) || size < 1) { setFormError('Vui lòng nhập quy mô nhóm hợp lệ (lớn hơn 0)'); return; }
-
-    setFormLoading(true);
-    setFormError('');
-
-    try {
-      const s = await getStudent(clean);
-      if (s.status === 'banned') {
-        setFormError(`Tài khoản sinh viên ${s.id} hiện đang bị khóa quyền mượn phòng.`);
-        return;
-      }
-
-      s._groupSize = size;
-      setStudent(s);
-
-      // Kiểm tra xem sinh viên đã có phòng đang mượn chưa
-      const existing = await loadActiveBooking(s.id);
-      if (existing) {
-        setShowActiveBooking(true);
-      } else {
-        setShowActiveBooking(false);
-        // Cuộn mượt xuống phần Chọn phòng nhanh
-        const el = document.getElementById('quick-rooms-section');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth' });
-        }
-      }
-    } catch (err) {
-      setFormError(err.message || 'Có lỗi xảy ra khi kiểm tra thông tin sinh viên.');
-    } finally {
-      setFormLoading(false);
-    }
-  };
-
-  const handleQuickBook = (room) => {
-    if (activeBooking && showActiveBooking) {
-      alert('Bạn đang có phòng mượn chưa hoàn tất. Vui lòng trả phòng trước khi mượn tiếp!');
-      return;
-    }
-    const currentStudent = student || {
-      id: emailOrMssv.split('@')[0].toUpperCase(),
-      name: 'Nguyễn Văn An',
-      email: emailOrMssv.includes('@') ? emailOrMssv : `${emailOrMssv}@student.hcmiu.edu.vn`,
-      _groupSize: Number(groupSize) || 5
+    return {
+      phoneTimeHM: `${h}:${m}`,
+      phoneTimeS: s
     };
-    setStudent(currentStudent);
-    setBookingRoom(room);
-  };
-
-  const handleBookingSuccess = (newBooking) => {
-    setBookingRoom(null);
-    setActiveBooking(newBooking);
-    setShowActiveBooking(true);
-  };
-
-  // Lọc phòng theo quy mô
-  const displayedQuickRooms = allRooms.filter(r => {
-    if (scaleFilter === 'CLASSROOM') return r.type === 'CLASSROOM';
-    if (scaleFilter === 'AUDITORIUM') return r.type === 'AUDITORIUM';
-    return true;
-  });
-
-  // Chuẩn bị danh sách phòng lặp vô tận cho marquee (không bao giờ bị giật hay rỗng)
-  const marqueeRooms = useMemo(() => {
-    if (displayedQuickRooms.length === 0) return [];
-    let items = [...displayedQuickRooms];
-    while (items.length < 8) {
-      items = [...items, ...displayedQuickRooms];
-    }
-    return [...items, ...items];
-  }, [displayedQuickRooms]);
-
-  // Tốc độ lướt mượt mà ~55px/giây
-  const animDuration = Math.max(25, (marqueeRooms.length / 2) * 4.5);
+  }, [clockDate, simulatedTime]);
 
   return (
-    <div style={{ padding: '2rem 0 4rem' }}>
-      <div className="container">
-        {/* =========================================================================
-            FORM THÔNG TIN MƯỢN PHÒNG (LUÔN HIỆN ĐẦU TIÊN KHI MỚI VÀO TRANG)
-           ========================================================================= */}
-        <div style={{ maxWidth: '640px', margin: '0 auto 3rem auto' }}>
-          <div className="card" style={{
-            padding: '2rem',
-            borderRadius: '12px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-            border: '1px solid #e2e8f0',
-            background: 'white',
-            overflow: 'hidden',
-            position: 'relative'
-          }}>
-            {/* Top accent bar */}
-            <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0, height: '6px',
-              background: 'linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%)'
-            }} />
+    <div className="space-y-12">
+      {/* KHU VỰC HERO CÓ HÌNH NỀN TRƯỜNG & KHUNG KÍNH TRONG SUỐT */}
+      <div 
+        className="relative rounded-3xl overflow-hidden p-6 sm:p-12 mb-10 bg-cover bg-center shadow-lg border border-slate-200"
+        style={{ backgroundImage: `url('/campus.jpg')` }}
+      >
+        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]"></div>
 
-            <h2 style={{
-              textAlign: 'center',
-              color: '#0f172a',
-              fontWeight: '800',
-              fontSize: '1.45rem',
-              marginBottom: '1.5rem',
-              letterSpacing: '-0.3px'
-            }}>
-              Thông tin mượn phòng
-            </h2>
-
-            {/* Nếu đã bấm ĐẶT PHÒNG và sinh viên có phòng active -> Hiển thị thẻ phòng đang mượn */}
-            {showActiveBooking && activeBooking ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }} className="fade-in">
-                <BookingBanner
-                  booking={activeBooking}
-                  onRefresh={() => loadActiveBooking(emailOrMssv)}
-                />
-
-                <div style={{
-                  padding: '0.75rem 1rem', background: '#fffbeb', border: '1px solid #fef3c7',
-                  borderRadius: '8px', fontSize: '0.8rem', color: '#b45309', textAlign: 'center', fontWeight: '600'
-                }}>
-                  ⚠️ Bạn đang có phòng mượn chưa hoàn tất. Mỗi sinh viên chỉ được đặt 1 phòng trong cùng một thời điểm.
-                </div>
-              </div>
-            ) : (
-              /* Mặc định: Luôn hiển thị Form sạch sẽ đầu tiên */
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label" style={{ fontWeight: '700', fontSize: '0.85rem', color: '#334155', marginBottom: '6px', display: 'block' }}>
-                    Nhập email sinh viên hoặc MSSV
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', display: 'flex' }}>
-                      <Mail size={18} />
-                    </div>
-                    <input
-                      className="form-input"
-                      placeholder="Nhập email sinh viên của bạn (VD: ITITIU20000@student.hcmiu.edu.vn)"
-                      value={emailOrMssv}
-                      onChange={e => { setEmailOrMssv(e.target.value); setFormError(''); }}
-                      style={{ paddingLeft: '40px', fontSize: '0.9rem', borderRadius: '8px', background: '#f8fafc', height: '46px' }}
-                    />
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px', display: 'block' }}>
-                    Chấp nhận email trường HCMIU hoặc mã số sinh viên trực tiếp
-                  </span>
-                </div>
-
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label" style={{ fontWeight: '700', fontSize: '0.85rem', color: '#334155', marginBottom: '6px', display: 'block' }}>
-                    Số lượng thành viên (Quy mô nhóm)
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', display: 'flex' }}>
-                      <Users size={18} />
-                    </div>
-                    <input
-                      type="number"
-                      min={1}
-                      max={150}
-                      className="form-input"
-                      placeholder="Số lượng thành viên (VD: 5)"
-                      value={groupSize}
-                      onChange={e => { setGroupSize(e.target.value); setFormError(''); }}
-                      style={{ paddingLeft: '40px', fontSize: '0.9rem', borderRadius: '8px', background: '#f8fafc', height: '46px' }}
-                    />
-                  </div>
-                </div>
-
-                {formError && (
-                  <div style={{
-                    background: '#fef2f2', border: '1px solid #fecaca',
-                    borderRadius: '8px', padding: '0.75rem 1rem',
-                    color: '#dc2626', fontSize: '0.85rem',
-                    display: 'flex', alignItems: 'center', gap: '8px'
-                  }}>
-                    <AlertCircle size={16} style={{ flexShrink: 0 }} />
-                    <span>{formError}</span>
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={formLoading}
-                  style={{
-                    marginTop: '0.5rem',
-                    background: '#1e3a8a',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    height: '48px',
-                    fontWeight: '800',
-                    fontSize: '0.95rem',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 12px rgba(30, 58, 138, 0.25)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    fontFamily: 'inherit'
-                  }}
-                >
-                  {formLoading ? 'Đang kiểm tra...' : '→ ĐẶT PHÒNG'}
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-
-        {/* =========================================================================
-            SECTION: CHỌN PHÒNG NHANH (CAROUSEL MARQUEE VÔ TẬN, CẮT 2 BÊN ĐỀU, LƯỚT THÌ DỪNG)
-           ========================================================================= */}
-        <div id="quick-rooms-section" style={{
-          background: 'white',
-          borderRadius: '12px',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-          overflow: 'hidden',
-          padding: '1.25rem 0 0.5rem 0',
-        }}>
-          {/* Header Bar của cụm Đặt phòng nhanh */}
-          <div style={{
-            padding: '0 1.5rem 1rem 1.5rem',
-            borderBottom: '1px solid #f1f5f9',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '12px',
-          }}>
-            {/* Title & Badge */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                width: '36px', height: '36px', borderRadius: '8px',
-                background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#d97706'
-              }}>
-                <Zap size={20} style={{ color: '#f59e0b', fill: '#f59e0b' }} />
-              </div>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <h2 style={{ color: '#0f172a', fontWeight: '800', fontSize: '1.2rem', margin: 0 }}>
-                    Chọn phòng nhanh
-                  </h2>
-                  <span style={{
-                    fontSize: '0.72rem', fontWeight: '700', padding: '2px 8px',
-                    borderRadius: '6px', background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe'
-                  }}>
-                    {displayedQuickRooms.length} phòng khả dụng
-                  </span>
-                </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
-                  Trượt tự động liên tục • Rê chuột vào để dừng xem chi tiết & đặt phòng
-                </div>
-              </div>
-            </div>
-
-            {/* Điều khiển: Trạng thái trượt + Hướng chạy + Xem tất cả */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              {/* Badge trạng thái animation */}
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  fontSize: '0.75rem',
-                  fontWeight: '700',
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  background: (isHovered || isPaused) ? '#fef2f2' : '#ecfdf5',
-                  color: (isHovered || isPaused) ? '#dc2626' : '#059669',
-                  border: (isHovered || isPaused) ? '1px solid #fecaca' : '1px solid #a7f3d0',
-                  transition: 'all 0.2s',
-                  userSelect: 'none'
-                }}
-              >
-                {(isHovered || isPaused) ? (
-                  <>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#dc2626' }} />
-                    <span>Đang dừng (Rê chuột ra để tiếp tục)</span>
-                  </>
-                ) : (
-                  <>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#059669' }} />
-                    <span>Đang trượt (Rê chuột vào để dừng)</span>
-                  </>
-                )}
-              </div>
-
-              {/* Bộ chuyển hướng chạy */}
-              <div style={{ display: 'flex', background: '#f1f5f9', padding: '2px', borderRadius: '6px' }}>
-                <button
-                  type="button"
-                  title="Chạy từ trái sang phải"
-                  onClick={() => setDirection('ltr')}
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: '5px',
-                    border: 'none',
-                    background: direction === 'ltr' ? 'white' : 'transparent',
-                    color: direction === 'ltr' ? '#1e40af' : '#64748b',
-                    fontSize: '0.75rem',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    boxShadow: direction === 'ltr' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                    transition: 'all 0.15s'
-                  }}
-                >
-                  Trái → Phải
-                </button>
-                <button
-                  type="button"
-                  title="Chạy từ phải sang trái"
-                  onClick={() => setDirection('rtl')}
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: '5px',
-                    border: 'none',
-                    background: direction === 'rtl' ? 'white' : 'transparent',
-                    color: direction === 'rtl' ? '#1e40af' : '#64748b',
-                    fontSize: '0.75rem',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    boxShadow: direction === 'rtl' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                    transition: 'all 0.15s'
-                  }}
-                >
-                  Phải → Trái
-                </button>
-              </div>
-
-              <button
-                className="btn btn-outline btn-sm"
-                onClick={() => onNavigate('rooms', { groupSize: Number(groupSize) || 5 })}
-                style={{ display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '8px', fontWeight: '700', padding: '0.4rem 0.85rem' }}
-              >
-                <Search size={14} /> Tất cả phòng
-              </button>
-            </div>
-          </div>
-
-          {/* Thanh lọc theo Quy mô */}
-          <div style={{
-            padding: '0.75rem 1.5rem',
-            background: '#f8fafc',
-            borderBottom: '1px solid #f1f5f9',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '10px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b', textTransform: 'uppercase' }}>
-                Quy mô:
+        <div className="relative z-10 max-w-6xl mx-auto w-full">
+          
+          {/* ĐỒNG HỒ PHONG CÁCH ĐIỆN THOẠI (CENTER HORIZONTAL, KHÔNG CÓ BACKGROUND, GIỜ + NGÀY) */}
+          <div className="text-center mb-8 sm:mb-10 select-none flex flex-col items-center justify-center">
+            {/* Giờ to dạng 00:00 (với giây tinh tế phong cách lockscreen điện thoại) */}
+            <div className="flex items-baseline justify-center tracking-tight text-white drop-shadow-lg">
+              <span className="text-6xl sm:text-7xl md:text-8xl font-extralight tracking-tight font-sans">
+                {phoneTimeHM}
               </span>
-
-              <button
-                type="button"
-                onClick={() => setScaleFilter('ALL')}
-                style={{
-                  padding: '5px 12px', borderRadius: '6px', border: 'none',
-                  background: scaleFilter === 'ALL' ? '#1e3a8a' : 'white',
-                  color: scaleFilter === 'ALL' ? 'white' : '#475569',
-                  boxShadow: scaleFilter === 'ALL' ? '0 1px 4px rgba(30,58,138,0.2)' : '0 1px 2px rgba(0,0,0,0.05)',
-                  fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer',
-                  transition: 'all 0.15s'
-                }}
-              >
-                Tất cả ({allRooms.length})
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setScaleFilter('CLASSROOM')}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  padding: '5px 12px', borderRadius: '6px', border: 'none',
-                  background: scaleFilter === 'CLASSROOM' ? '#1e3a8a' : 'white',
-                  color: scaleFilter === 'CLASSROOM' ? 'white' : '#475569',
-                  boxShadow: scaleFilter === 'CLASSROOM' ? '0 1px 4px rgba(30,58,138,0.2)' : '0 1px 2px rgba(0,0,0,0.05)',
-                  fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer',
-                  transition: 'all 0.15s'
-                }}
-              >
-                <School size={14} /> Phòng học: 1 → 35 người
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setScaleFilter('AUDITORIUM')}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  padding: '5px 12px', borderRadius: '6px', border: 'none',
-                  background: scaleFilter === 'AUDITORIUM' ? '#1e3a8a' : 'white',
-                  color: scaleFilter === 'AUDITORIUM' ? 'white' : '#475569',
-                  boxShadow: scaleFilter === 'AUDITORIUM' ? '0 1px 4px rgba(30,58,138,0.2)' : '0 1px 2px rgba(0,0,0,0.05)',
-                  fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer',
-                  transition: 'all 0.15s'
-                }}
-              >
-                <Building2 size={14} /> Giảng đường: 36 → 150 người
-              </button>
+              <span className="text-2xl sm:text-3xl font-light text-sky-200/90 ml-1.5 drop-shadow">
+                :{phoneTimeS}
+              </span>
             </div>
 
-            {numGroupSize > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: '#1e40af', background: '#eff6ff', padding: '4px 10px', borderRadius: '6px' }}>
-                <Sparkles size={13} color="#f59e0b" />
-                <span>
-                  Quy mô: <strong>{numGroupSize} người</strong> ➔ Đang gợi ý:{' '}
-                  <strong>{numGroupSize <= 35 ? 'Phòng học (1 - 35 người)' : 'Giảng đường (36 - 150 người)'}</strong>
-                </span>
+            {/* Thứ, Ngày Tháng kiểu điện thoại */}
+            <p className="text-sm sm:text-base md:text-lg font-medium text-slate-100/95 tracking-wide mt-1 drop-shadow">
+              {phoneDateFormatted}
+            </p>
+
+            {/* Tag chế độ Dev nếu đang bật */}
+            {simulatedTime && (
+              <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/25 text-amber-200 border border-amber-400/40 text-xs font-semibold backdrop-blur-xs drop-shadow">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                <span>⚡ Dev Mode: Giờ đang chạy ({phoneTimeHM}:{phoneTimeS})</span>
               </div>
             )}
           </div>
 
-          {/* VIEWPORT MARQUEE: CẮT 2 BÊN ĐỀU BẰNG GRADIENT MASK (CÂN XỨNG, KHÔNG TRÀN WEB) */}
-          <div
-            className="quick-rooms-viewport"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            style={{
-              overflow: 'hidden',
-              position: 'relative',
-              width: '100%',
-              padding: '1.25rem 0',
-              maskImage: 'linear-gradient(to right, transparent 0%, black 48px, black calc(100% - 48px), transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 48px, black calc(100% - 48px), transparent 100%)',
-            }}
-          >
-            {loadingRooms ? (
-              <div style={{ display: 'flex', gap: '16px', padding: '0 1.5rem' }}>
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} style={{ width: '265px', minWidth: '265px', height: '175px', background: '#e2e8f0', borderRadius: '10px', flexShrink: 0 }} />
-                ))}
-              </div>
-            ) : displayedQuickRooms.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
-                Không có phòng nào phù hợp với quy mô này hiện tại.
+          {/* LƯỚI BỐ CỤC CHÍNH BÊN DƯỚI: CỘT TRÁI (THÔNG TIN) & CỘT PHẢI (LỊCH SỬ PHẠT) */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start w-full">
+            
+            {/* CỘT TRÁI: FORM TRA CỨU DẠNG KÍNH MỜ TRONG SUỐT (GLASSMORPHISM) */}
+            <div className={`${currentUser && studentStatus ? 'lg:col-span-2' : 'lg:col-span-3 max-w-xl mx-auto w-full'} bg-white/85 backdrop-blur-md border border-white/60 rounded-3xl p-6 sm:p-8 shadow-2xl transition-all`}>
+              
+              {!currentUser ? (
+              /* TRƯỜNG HỢP CHƯA ĐĂNG NHẬP */
+              <div className="text-center py-4 space-y-4">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-100/90 text-sky-800 text-xs font-bold border border-sky-200">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  Hệ thống Mượn phòng Sinh viên HCMIU
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                  Chào mừng đến với <span className="bg-gradient-to-r from-sky-600 to-indigo-700 bg-clip-text text-transparent">IU RoomPeek</span>
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+                  Hệ thống đặt phòng học nhóm & phòng thực hành thông minh. Vui lòng đăng nhập bằng <strong>Email sinh viên trường ĐH Quốc Tế (@student.hcmiu.edu.vn)</strong> để tiếp tục.
+                </p>
+
+                <div className="pt-3 flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto">
+                  <button 
+                    onClick={() => onOpenAuth('login')}
+                    className="flex-1 py-3 px-5 bg-gradient-to-r from-sky-600 to-indigo-900 hover:from-sky-500 hover:to-indigo-950 text-white font-bold rounded-2xl shadow-lg shadow-sky-900/20 transition flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Đăng nhập ngay
+                  </button>
+                  <button 
+                    onClick={() => onOpenAuth('register')}
+                    className="flex-1 py-3 px-5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold rounded-2xl shadow-xs transition flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    Đăng ký tài khoản
+                  </button>
+                </div>
               </div>
             ) : (
-              <div
-                className="quick-rooms-track"
-                style={{
-                  display: 'flex',
-                  gap: '16px',
-                  width: 'max-content',
-                  animationName: direction === 'ltr' ? 'marqueeLeftToRight' : 'marqueeRightToLeft',
-                  animationDuration: `${animDuration}s`,
-                  animationTimingFunction: 'linear',
-                  animationIterationCount: 'infinite',
-                  animationPlayState: (isHovered || isPaused) ? 'paused' : 'running',
-                  willChange: 'transform'
-                }}
-              >
-                {marqueeRooms.map((room, idx) => (
-                  <div
-                    key={`${room.id}-${idx}`}
-                    style={{
-                      width: '265px',
-                      minWidth: '265px',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <RoomCard
-                      room={room}
-                      compact
-                      onBook={handleQuickBook}
-                    />
+              /* TRƯỜNG HỢP ĐÃ ĐĂNG NHẬP TÀI KHOẢN SINH VIÊN */
+              <div>
+                <div className="flex items-center justify-between pb-4 border-b border-slate-200/80 mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-700 flex items-center justify-center text-white text-lg font-black shadow-md">
+                      {currentUser.fullName ? currentUser.fullName.charAt(0).toUpperCase() : 'U'}
+                    </div>
+                    <div>
+                      <div className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
+                        <span>{currentUser.fullName}</span>
+                        <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200">
+                          Sinh viên IU
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-500 font-medium mt-0.5">
+                        MSSV: <strong className="text-sky-700 font-mono font-bold">{currentUser.studentId}</strong> • {currentUser.email}
+                      </div>
+                    </div>
                   </div>
-                ))}
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1.5 uppercase tracking-wide">
+                      Quy mô nhóm mượn phòng (Số lượng thành viên)
+                    </label>
+                    <div className="relative">
+                      <input 
+                        type="number" 
+                        min="1"
+                        max="50"
+                        value={memberCount} 
+                        onChange={(e) => setMemberCount(e.target.value)}
+                        placeholder="VD: 3 hoặc 5 thành viên" 
+                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/90 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-semibold shadow-inner transition"
+                      />
+                      <Users className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={handleStudentAction}
+                    className="w-full bg-gradient-to-r from-sky-600 to-indigo-900 hover:from-sky-500 hover:to-indigo-950 text-white font-bold py-3 rounded-2xl transition duration-200 shadow-lg shadow-sky-900/20 flex items-center justify-center gap-2 mt-2 cursor-pointer active:scale-98"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                    {studentStatus?.hasActiveBooking ? 'XEM PHÒNG ĐANG MƯỢN' : 'TÌM PHÒNG & ĐẶT PHÒNG'}
+                  </button>
+                </div>
+
+                {/* KHỐI HIỂN THỊ PHÒNG ĐANG ĐẶT & NÚT HỦY PHÒNG */}
+                {studentStatus?.hasActiveBooking && (
+                  <div className="mt-6 pt-5 border-t border-slate-200/80">
+                    <BookingBanner 
+                      booking={studentStatus?.booking}
+                      onCheckIn={onCheckIn}
+                      onCheckOut={onCheckOut}
+                      onTimeoutNoShow={onTimeoutNoShow}
+                      onTimeoutLateCheckOut={onTimeoutLateCheckOut}
+                      simulatedTime={simulatedTime}
+                    />
+
+                    {/* Nút hủy phòng (chỉ xuất hiện khi ở trạng thái BOOKED, chưa Check-in) */}
+                    {studentStatus.booking.status === 'BOOKED' && (
+                      <div className="mt-3 flex justify-end">
+                        <button
+                          onClick={() => onCancelBooking(studentStatus.booking.id)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 hover:bg-rose-100 transition active:scale-95 cursor-pointer shadow-2xs"
+                        >
+                          <Ban className="w-3.5 h-3.5" />
+                          Hủy đặt phòng
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
+
           </div>
 
-          <style>{`
-            @keyframes marqueeLeftToRight {
-              0% {
-                transform: translateX(-50%);
-              }
-              100% {
-                transform: translateX(0%);
-              }
-            }
+          {/* CỘT PHẢI: LỊCH SỬ BỊ PHẠT CỦA SINH VIÊN (CHỈ HIỂN THỊ KHI ĐÃ ĐĂNG NHẬP) */}
+          {currentUser && studentStatus && (
+            <div className="bg-white/85 backdrop-blur-md border border-white/60 rounded-3xl p-6 shadow-2xl">
+              <div className="flex items-center gap-2 text-rose-600 font-black mb-4">
+                <ShieldAlert className="w-5 h-5" />
+                <span className="tracking-tight">Lịch sử vi phạm & Chế tài</span>
+              </div>
 
-            @keyframes marqueeRightToLeft {
-              0% {
-                transform: translateX(0%);
-              }
-              100% {
-                transform: translateX(-50%);
-              }
-            }
+              {/* Thông báo đang bị tạm khóa đặt phòng (nếu có) */}
+              {studentStatus.penalties && !studentStatus.penalties.canBook && (
+                <div className="p-3 mb-3 bg-amber-500/15 border border-amber-500/30 rounded-2xl flex items-start gap-2.5 text-xs text-amber-900 font-bold shadow-2xs">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>{studentStatus.penalties.reason}</div>
+                </div>
+              )}
 
-            .quick-rooms-track:hover {
-              animation-play-state: paused !important;
-            }
-          `}</style>
+              {!studentStatus.penalties?.violations?.length ? (
+                <div className="text-center py-6 text-slate-500 text-sm font-medium">
+                  <CheckCircle className="w-10 h-10 mx-auto text-emerald-500 mb-2 opacity-80" />
+                  Sinh viên chưa có vi phạm nào.
+                </div>
+              ) : (
+                <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+                  {studentStatus.penalties.violations.map((v, idx) => (
+                    <div key={idx} className="p-3 bg-rose-50/90 border border-rose-200/80 rounded-2xl text-xs text-rose-900 shadow-2xs">
+                      <div className="font-bold">{v.reason}</div>
+                      <div className="text-slate-500 mt-1 font-mono text-[11px]">{v.date}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-4 pt-3 border-t border-slate-200 text-xs text-slate-600 space-y-1 font-medium">
+                <p className="font-bold text-slate-800">Quy tắc chế tài:</p>
+                <p>• Không nhận phòng (&gt;10p): Cảnh cáo → Khóa 30 ngày → Khóa vĩnh viễn.</p>
+                <p>• Trả phòng: Cho phép trả phòng trong khung 30p trước và 30p sau giờ kết thúc ca. Quá 30p sau giờ kết thúc sẽ phạt: Cảnh cáo → Khóa 7 ngày → Khóa 30 ngày → Cấm vĩnh viễn.</p>
+                <p>• Hủy phòng: Tối đa 3 lần miễn phí/ngày. Từ lần thứ 4 trở đi (cả hôm nay hoặc tương lai) sẽ hủy phòng và tạm cấm đặt 10 phút kèm cảnh cáo.</p>
+              </div>
+            </div>
+          )}
+          </div>
         </div>
       </div>
 
-      {/* Booking Modal với mốc giờ tự do và popup xác nhận */}
-      {bookingRoom && (
-        <BookingModal
-          room={bookingRoom}
-          student={student || { id: 'ITITIU20000', name: 'Nguyễn Văn An', email: 'ITITIU20000@student.hcmiu.edu.vn', _groupSize: Number(groupSize) || 5 }}
-          onClose={() => setBookingRoom(null)}
-          onSuccess={handleBookingSuccess}
-        />
-      )}
+      {/* MỤC "⚡ CHỌN PHÒNG NHANH" (BĂNG CHUYỀN) */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-black text-slate-800 flex items-center gap-2 tracking-tight">
+            <span className="text-amber-500 text-2xl">⚡</span> Chọn phòng nhanh
+          </h3>
+          <span className="text-xs text-emerald-800 bg-emerald-50 font-bold px-3 py-1 rounded-full border border-emerald-200 shadow-2xs">
+            Chỉ hiển thị {marqueeRooms.length} phòng đang TRỐNG
+          </span>
+        </div>
+
+        <div className="overflow-hidden relative w-full rounded-2xl py-2">
+          <div className="flex gap-4 animate-marquee pause-hover w-max">
+            {[...marqueeRooms, ...marqueeRooms].map((room, idx) => (
+              <RoomCard 
+                key={`${room.id}-${idx}`} 
+                room={room} 
+                onBook={onOpenBookModal} 
+                isMarquee={true} 
+              />
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

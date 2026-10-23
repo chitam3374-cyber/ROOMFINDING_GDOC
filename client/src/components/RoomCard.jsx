@@ -1,117 +1,80 @@
-import { Users, Building2, CheckCircle } from 'lucide-react';
+import React from 'react';
+import { Users, ArrowRight, Monitor, Wifi, Wind, MapPin } from 'lucide-react';
 
-export default function RoomCard({ room, onBook, compact = false }) {
-  const available = room.isAvailableNow;
-  const isAuditorium = room.type === 'AUDITORIUM';
+export default function RoomCard({ room, onBook, isMarquee = false }) {
+  // Tự động phân tích Tòa nhà và Tầng từ mã phòng (VD: A1.101 -> Tòa A1, Tầng 1)
+  const buildingName = room.building || room.id?.split('.')[0] || 'A1';
+  const floorNumber = room.floor || (room.id?.split('.')[1] ? room.id.split('.')[1][0] : '1');
 
   return (
-    <div
-      style={{
-        background: '#1e3a8a',
-        borderRadius: '10px',
-        padding: compact ? '1.1rem' : '1.25rem',
-        color: 'white',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        gap: '0.75rem',
-        boxShadow: '0 4px 14px rgba(30,58,138,0.25)',
-        transition: 'transform 0.15s, box-shadow 0.15s',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = '0 8px 22px rgba(30,58,138,0.35)';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 4px 14px rgba(30,58,138,0.25)';
-      }}
+    <div 
+      className={`${
+        isMarquee ? 'w-72 flex-shrink-0' : 'w-full'
+      } group bg-white rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden relative`}
     >
-      {/* Header: room ID + TRỐNG/ĐÃ ĐẶT badge */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+      {/* PHẦN HEADER: Nền Gradient sắc nét & Huy hiệu trạng thái */}
+      <div className="bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-900 text-white p-5 relative overflow-hidden">
+        {/* Vệt sáng trang trí chìm */}
+        <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-sky-500/10 rounded-full blur-xl group-hover:bg-sky-500/25 transition-all duration-500"></div>
+
+        <div className="flex items-center justify-between relative z-10">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-300 bg-emerald-950/70 border border-emerald-500/30 px-2.5 py-0.5 rounded-full tracking-wide">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            TRỐNG
+          </span>
+
+          <span className="text-xs text-slate-300 flex items-center gap-1 font-medium bg-white/10 px-2 py-0.5 rounded-md backdrop-blur-xs">
+            <MapPin className="w-3.5 h-3.5 text-sky-400" />
+            Tòa {buildingName} - Tầng {floorNumber}
+          </span>
+        </div>
+
+        {/* Mã phòng to đậm */}
+        <div className="text-3xl font-black tracking-wider text-white mt-3 group-hover:text-sky-300 transition-colors">
+          {room.id}
+        </div>
+      </div>
+
+      {/* PHẦN BODY: Chi tiết loại phòng, sức chứa và tiện ích */}
+      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
         <div>
-          <div style={{ fontWeight: '900', fontSize: compact ? '1.15rem' : '1.3rem', lineHeight: 1.1, letterSpacing: '-0.5px' }}>
-            {room.id || room.name}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-            <span style={{
-              fontSize: '0.7rem',
-              fontWeight: '700',
-              background: 'rgba(255,255,255,0.18)',
-              padding: '2px 7px',
-              borderRadius: '6px',
-              color: '#dbeafe'
-            }}>
-              {room.typeName || (isAuditorium ? 'Giảng đường' : 'Phòng học')}
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-sky-700 bg-sky-50 border border-sky-100 px-2.5 py-0.5 rounded-md">
+              {room.category || 'Phòng học nhóm'}
             </span>
-            <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.7)', fontWeight: '600' }}>
-              {isAuditorium ? '36 – 150 người' : '1 – 35 người'}
+            <span className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-slate-400" />
+              Sức chứa: <strong className="text-slate-900">{room.capacity} chỗ</strong>
+            </span>
+          </div>
+
+          <h4 className="font-bold text-slate-800 text-sm line-clamp-1 group-hover:text-indigo-900 transition">
+            {room.name || `Phòng tự học ${room.id}`}
+          </h4>
+
+          {/* Hàng icon tiện ích phòng thực tế */}
+          <div className="flex items-center gap-3 pt-3 border-t border-slate-100 text-slate-500 text-xs mt-3">
+            <span className="flex items-center gap-1 text-[11px]" title="Có điều hòa không khí">
+              <Wind className="w-3.5 h-3.5 text-sky-500" /> Máy lạnh
+            </span>
+            <span className="flex items-center gap-1 text-[11px]" title="Có máy chiếu/Màn hình lớn">
+              <Monitor className="w-3.5 h-3.5 text-indigo-500" /> Màn hình
+            </span>
+            <span className="flex items-center gap-1 text-[11px]" title="Wifi phủ sóng">
+              <Wifi className="w-3.5 h-3.5 text-emerald-500" /> Wifi
             </span>
           </div>
         </div>
 
-        <span style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '3px',
-          padding: '3px 9px',
-          borderRadius: '6px',
-          fontSize: '0.7rem',
-          fontWeight: '800',
-          letterSpacing: '0.5px',
-          background: available ? '#10b981' : '#64748b',
-          color: 'white',
-          whiteSpace: 'nowrap',
-          flexShrink: 0,
-        }}>
-          {available ? <CheckCircle size={11} /> : null}
-          {available ? 'TRỐNG' : 'ĐÃ ĐẶT'}
-        </span>
-      </div>
-
-      {/* Info row */}
-      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', fontSize: '0.8rem', color: 'rgba(255,255,255,0.85)' }}>
-        {room.capacityDisplay && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <Users size={13} color="#93c5fd" />
-            <span>Sức chứa: {room.capacityDisplay} người</span>
-          </div>
-        )}
-        {room.building && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <Building2 size={13} color="#93c5fd" />
-            <span>Tòa {room.building}{room.floor ? ` • Tầng ${room.floor}` : ''}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Book button */}
-      {available && onBook && (
-        <button
-          onClick={() => onBook(room)}
-          style={{
-            marginTop: '0.25rem',
-            background: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            color: '#1e3a8a',
-            padding: compact ? '0.45rem 0.8rem' : '0.55rem 1rem',
-            fontSize: '0.85rem',
-            fontWeight: '800',
-            cursor: 'pointer',
-            transition: 'background 0.15s, transform 0.1s',
-            width: '100%',
-            fontFamily: 'inherit',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-          }}
-          onMouseEnter={e => { e.target.style.background = '#f1f5f9'; }}
-          onMouseLeave={e => { e.target.style.background = 'white'; }}
+        {/* NÚT ĐẶT PHÒNG GRADIENT */}
+        <button 
+          onClick={() => onBook(room, isMarquee)}
+          className="w-full mt-2 flex items-center justify-center gap-2 bg-slate-900 hover:bg-gradient-to-r hover:from-sky-600 hover:to-indigo-700 text-white text-xs font-bold py-2.5 rounded-xl shadow-xs hover:shadow-md hover:shadow-sky-500/20 active:scale-[0.98] transition-all duration-200 cursor-pointer"
         >
-          Đặt ngay →
+          <span>Đặt ngay</span>
+          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
         </button>
-      )}
+      </div>
     </div>
   );
 }

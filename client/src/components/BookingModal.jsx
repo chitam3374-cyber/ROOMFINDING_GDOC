@@ -1,292 +1,257 @@
-import { useState, useEffect } from 'react';
-import { X, CalendarPlus, Clock, Users, MapPin, AlertCircle } from 'lucide-react';
-import { createBooking, getBookedRanges, isTimeOverlapping } from '../services/api';
+import React, { useMemo } from 'react';
+import { Calendar, X, Clock, AlertCircle, CalendarDays } from 'lucide-react';
 
-export default function BookingModal({ room, student, onClose, onSuccess }) {
-  const today = '2026-10-19';
-  const [date, setDate] = useState(today);
-  const [startTime, setStartTime] = useState('09:00');
-  const [endTime, setEndTime] = useState('11:00');
-  const [bookedRanges, setBookedRanges] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  
-  // Step: 'TIME_SELECT' (Chọn giờ tự do) -> 'CONFIRM' (Ảnh 4: Xác nhận đặt phòng)
-  const [step, setStep] = useState('TIME_SELECT');
+export default function BookingModal({
+  modalState,
+  setModalState,
+  studentInput,
+  setStudentInput,
+  memberCount,
+  setMemberCount,
+  onConfirm,
+  currentUser
+}) {
+  if (!modalState.isOpen) return null;
 
-  useEffect(() => {
-    if (room) {
-      getBookedRanges(room.id, date).then(setBookedRanges);
-      setError('');
-      setStep('TIME_SELECT');
+  // 1. Tạo danh sách 14 ngày tới bắt đầu từ HÔM NAY (không hiển thị ngày quá khứ)
+  const availableDates = useMemo(() => {
+    const dates = [];
+    const daysOfWeek = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+    const now = new Date();
+
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(now);
+      d.setDate(now.getDate() + i);
+
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const isoDate = `${year}-${month}-${day}`; // Định dạng YYYY-MM-DD
+
+      const dayName = daysOfWeek[d.getDay()];
+      const label = i === 0 
+        ? `${dayName}, ${day}/${month}/${year} (Hôm nay)`
+        : `${dayName}, ${day}/${month}/${year}`;
+
+      dates.push({ isoDate, label });
     }
-  }, [room, date]);
+    return dates;
+  }, []);
 
-  // Kiểm tra hợp lệ và xung đột trùng giờ
-  const handleProceedToConfirm = () => {
-    setError('');
-    if (!startTime || !endTime) {
-      setError('Vui lòng chọn đầy đủ giờ điểm danh (bắt đầu) và giờ trả phòng (kết thúc)!');
-      return;
-    }
-    if (startTime >= endTime) {
-      setError('Giờ trả phòng (kết thúc) phải sau giờ điểm danh bắt đầu!');
-      return;
-    }
-
-    // Check collision trực tiếp
-    const conflict = bookedRanges.find(r => isTimeOverlapping(startTime, endTime, r.startTime, r.endTime));
-    if (conflict) {
-      setError(`Khung giờ bạn chọn (${startTime} - ${endTime}) bị trùng với lịch đã đặt trước của phòng này (${conflict.bookingCode}: ${conflict.startTime} - ${conflict.endTime})!`);
-      return;
-    }
-
-    setStep('CONFIRM');
+  const toMinutes = (timeStr) => {
+    if (!timeStr) return 0;
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
   };
 
-  // Xác nhận đặt phòng
-  const handleConfirmSubmit = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const payload = {
-        roomId: room.id,
-        roomName: room.name,
-        roomType: room.type,
-        studentId: student?.id || 'ITITIU20000',
-        studentName: student?.name || 'Nguyễn Văn An',
-        studentEmail: student?.email || 'ITITIU20000@student.hcmiu.edu.vn',
-        groupSize: student?._groupSize || 5,
-        bookingDate: date,
-        startTime,
-        endTime,
-      };
-      const result = await createBooking(payload);
-      onSuccess?.(result);
-      onClose();
-    } catch (e) {
-      setError(e.message || 'Không thể đặt phòng. Vui lòng thử lại.');
-      setStep('TIME_SELECT');
-    } finally {
-      setLoading(false);
+  const toTimeStr = (totalMinutes) => {
+    const clamped = Math.min(17 * 60, Math.max(8 * 60, totalMinutes));
+    const h = Math.floor(clamped / 60);
+    const m = clamped % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+  };
+
+  const handleStartTimeChange = (newStart) => {
+    let clampedStart = newStart;
+    if (clampedStart < '08:00') clampedStart = '08:00';
+    if (clampedStart > '16:00') clampedStart = '16:00';
+
+    const startMins = toMinutes(clampedStart);
+    const currentEndMins = toMinutes(modalState.endTime);
+
+    let newEndMins = currentEndMins;
+    if (currentEndMins - startMins < 60) {
+      newEndMins = Math.min(17 * 60, startMins + 60);
     }
+
+    setModalState({
+      ...modalState,
+      startTime: clampedStart,
+      endTime: toTimeStr(newEndMins)
+    });
+  };
+
+  const handleEndTimeChange = (newEnd) => {
+    let clampedEnd = newEnd;
+    if (clampedEnd > '17:00') clampedEnd = '17:00';
+    if (clampedEnd < '09:00') clampedEnd = '09:00';
+
+    const startMins = toMinutes(modalState.startTime);
+    let endMins = toMinutes(clampedEnd);
+
+    if (endMins - startMins < 60) {
+      endMins = Math.min(17 * 60, startMins + 60);
+      clampedEnd = toTimeStr(endMins);
+    }
+
+    setModalState({
+      ...modalState,
+      endTime: clampedEnd
+    });
   };
 
   return (
-    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      {/* =========================================================================
-          BƯỚC 1: CHỌN MỐC GIỜ TỰ DO [ 10h45 ] — [ 11h30 ] (THEO ẢNH 1)
-         ========================================================================= */}
-      {step === 'TIME_SELECT' && (
-        <div className="modal-box fade-in" style={{ maxWidth: '500px', width: '92vw' }}>
-          <div className="modal-header">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+      <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-150 relative">
+        
+        {/* NÚT ĐÓNG NHANH */}
+        <button 
+          type="button"
+          onClick={() => setModalState({ ...modalState, isOpen: false })}
+          className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+        >
+          <X className="w-5 h-5 shrink-0" />
+        </button>
+
+        {/* HEADER MODAL */}
+        <div className="flex items-center gap-3.5 mb-5">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+            <Calendar className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-slate-900 tracking-tight">Xác nhận đặt phòng</h3>
+            <p className="text-xs text-slate-500">Khung giờ hoạt động: 08:00 - 17:00</p>
+          </div>
+        </div>
+
+        {/* THẺ THÔNG TIN PHÒNG */}
+        <div className="p-4 bg-gradient-to-br from-slate-50 to-sky-50/40 rounded-2xl border border-slate-200/80 mb-4">
+          <div className="flex items-center justify-between">
+            <div className="text-xl font-black text-slate-900 font-mono tracking-wide">
+              Phòng: <span className="text-sky-700">{modalState.room?.id}</span>
+            </div>
+            <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/70 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+              Khả dụng
+            </span>
+          </div>
+          <div className="text-xs text-slate-600 mt-1 flex items-center gap-2">
+            <span>{modalState.room?.category || 'Phòng học nhóm'}</span>
+            <span>•</span>
+            <span>Sức chứa: <strong>{modalState.room?.capacity || 6} người</strong></span>
+          </div>
+        </div>
+
+        {/* THÔNG TIN TÀI KHOẢN SINH VIÊN ĐẶT PHÒNG */}
+        {currentUser && (
+          <div className="p-3 bg-sky-50/80 border border-sky-200/80 rounded-2xl mb-4 flex items-center justify-between text-xs shadow-2xs">
             <div>
-              <h2 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#1e3a8a' }}>
-                Chọn giờ mượn phòng {room.id}
-              </h2>
-              <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '2px' }}>
-                {room.name} • Sức chứa: {room.capacityDisplay}
-              </div>
+              <span className="text-slate-500 font-medium">Tài khoản đặt:</span>{' '}
+              <strong className="text-slate-900">{currentUser.fullName}</strong>{' '}
+              <span className="font-mono text-sky-700 font-bold">({currentUser.studentId})</span>
             </div>
-            <button className="modal-close" onClick={onClose}><X size={16} /></button>
+            <span className="text-[10px] font-mono text-sky-800 bg-white px-2 py-0.5 rounded-full border border-sky-200">
+              {currentUser.email}
+            </span>
           </div>
+        )}
 
-          <div className="modal-body" style={{ padding: '1.25rem 1.5rem' }}>
-            {error && (
-              <div style={{
-                background: '#fef2f2', border: '1px solid #fecaca',
-                borderRadius: '8px', padding: '0.75rem 1rem',
-                color: '#dc2626', fontSize: '0.85rem', marginBottom: '1rem',
-                display: 'flex', alignItems: 'center', gap: '8px'
-              }}>
-                <AlertCircle size={16} style={{ flexShrink: 0 }} />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <div style={{
-              background: '#eff6ff', border: '1px solid #bfdbfe',
-              borderRadius: '8px', padding: '0.75rem 1rem',
-              color: '#1e40af', fontSize: '0.85rem', marginBottom: '1.25rem'
-            }}>
-              💡 <strong>Lưu ý:</strong> Khi đặt phòng, phải có mốc giờ chọn tự do (VD: 10:45 – 11:30). Hệ thống sẽ tự động bắt lỗi nếu trùng lịch đã có trước!
+        {/* Ô CHỌN NGÀY VÀ THỨ (CHỈ TỪ HÔM NAY TRỞ ĐI) */}
+        <div className="mb-4">
+          <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+            <CalendarDays className="w-3.5 h-3.5 text-sky-600" />
+            Ngày & Thứ đặt phòng
+          </label>
+          <div className="relative">
+            <select
+              value={modalState.date || availableDates[0]?.isoDate}
+              onChange={(e) => setModalState({ ...modalState, date: e.target.value })}
+              className="w-full px-3.5 py-2.5 text-sm font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 transition shadow-inner bg-slate-50/50 focus:bg-white text-slate-800 cursor-pointer appearance-none"
+            >
+              {availableDates.map(item => (
+                <option key={item.isoDate} value={item.isoDate}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+              <CalendarDays className="w-4 h-4" />
             </div>
+          </div>
+        </div>
 
-            {/* Khung giờ tự do */}
-            <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-              <label style={{ fontWeight: '700', fontSize: '0.85rem', color: '#374151', display: 'block', marginBottom: '6px' }}>
-                Mốc giờ chọn tự do:
+        {/* NẾU LÀ ĐẶT NHANH THÌ NHẬP MSSV VÀ SỐ NGƯỜI */}
+        {modalState.isQuickBook && (
+          <div className="space-y-3.5 mb-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Mã số sinh viên (MSSV)</label>
+              <input 
+                type="text" 
+                value={studentInput} 
+                onChange={(e) => setStudentInput(e.target.value)}
+                placeholder="VD: 20000 hoặc ITITIU20000"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 transition shadow-inner bg-slate-50/50 focus:bg-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Số lượng người tham gia</label>
+              <input 
+                type="number" 
+                min="1"
+                max={modalState.room?.capacity || 50}
+                value={memberCount} 
+                onChange={(e) => setMemberCount(e.target.value)}
+                placeholder="VD: 4"
+                className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 transition shadow-inner bg-slate-50/50 focus:bg-white"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* BỘ CHỌN KHUNG GIỜ (08:00 - 17:00, TỐI THIỂU 60 PHÚT) */}
+        <div className="mb-5">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-sky-600" /> Giờ bắt đầu
               </label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ flex: 1 }}>
-                  <span style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Giờ điểm danh</span>
-                  <input
-                    type="time"
-                    className="form-input"
-                    value={startTime}
-                    onChange={e => setStartTime(e.target.value)}
-                    style={{ fontWeight: '700', textAlign: 'center', fontSize: '0.95rem' }}
-                  />
-                </div>
-                <span style={{ fontWeight: '800', color: '#9ca3af', marginTop: '18px' }}>—</span>
-                <div style={{ flex: 1 }}>
-                  <span style={{ fontSize: '0.75rem', color: '#6b7280', display: 'block', marginBottom: '4px' }}>Giờ trả phòng</span>
-                  <input
-                    type="time"
-                    className="form-input"
-                    value={endTime}
-                    onChange={e => setEndTime(e.target.value)}
-                    style={{ fontWeight: '700', textAlign: 'center', fontSize: '0.95rem' }}
-                  />
-                </div>
-              </div>
+              <input 
+                type="time" 
+                min="08:00"
+                max="16:00"
+                value={modalState.startTime}
+                onChange={(e) => handleStartTimeChange(e.target.value)}
+                className="w-full px-3.5 py-2 text-sm font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 transition shadow-inner bg-slate-50/50 focus:bg-white text-slate-800"
+              />
             </div>
 
-            {/* Presets gợi ý nhanh */}
-            <div style={{ marginBottom: '1.25rem' }}>
-              <span style={{ fontSize: '0.8rem', color: '#6b7280', fontWeight: '600', display: 'block', marginBottom: '6px' }}>
-                Khung giờ mẫu:
-              </span>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
-                {[
-                  ['08:00', '10:00'],
-                  ['10:00', '12:00'],
-                  ['10:45', '11:30'],
-                  ['13:00', '15:00'],
-                ].map(([st, et], idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => { setStartTime(st); setEndTime(et); }}
-                    style={{
-                      padding: '5px 4px',
-                      borderRadius: '6px',
-                      fontSize: '0.75rem',
-                      fontWeight: '600',
-                      border: startTime === st && endTime === et ? '1.5px solid #1e40af' : '1px solid #e5e7eb',
-                      background: startTime === st && endTime === et ? '#eff6ff' : '#f9fafb',
-                      color: startTime === st && endTime === et ? '#1e40af' : '#4b5563',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {st}–{et}
-                  </button>
-                ))}
-              </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-indigo-600" /> Giờ kết thúc
+              </label>
+              <input 
+                type="time" 
+                min="09:00"
+                max="17:00"
+                value={modalState.endTime}
+                onChange={(e) => handleEndTimeChange(e.target.value)}
+                className="w-full px-3.5 py-2 text-sm font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 transition shadow-inner bg-slate-50/50 focus:bg-white text-slate-800"
+              />
             </div>
-
-            {/* Danh sách các giờ đã bận */}
-            {bookedRanges.length > 0 && (
-              <div style={{ marginBottom: '1rem' }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#ef4444', display: 'block', marginBottom: '4px' }}>
-                  Giờ phòng đã bận hôm nay:
-                </span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '100px', overflowY: 'auto' }}>
-                  {bookedRanges.map((r, i) => (
-                    <div key={i} style={{
-                      padding: '4px 8px', borderRadius: '6px', background: '#fef2f2', border: '1px solid #fecaca',
-                      fontSize: '0.75rem', color: '#b91c1c', display: 'flex', justifyContent: 'space-between'
-                    }}>
-                      <span>🔒 {r.startTime} – {r.endTime}</span>
-                      <span style={{ fontWeight: '700' }}>{r.bookingCode}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
-          <div className="modal-footer" style={{ padding: '0.75rem 1.5rem', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-            <button className="btn btn-ghost btn-sm" onClick={onClose}>Đóng</button>
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={handleProceedToConfirm}
-              style={{ background: '#1e3a8a', color: 'white', fontWeight: '700', padding: '0.5rem 1.25rem' }}
-            >
-              Tiếp tục xác nhận →
-            </button>
+          <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-500">
+            <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+            <span>Chỉ được chọn từ <strong>08:00</strong> đến <strong>17:00</strong> (Tối thiểu 60 phút).</span>
           </div>
         </div>
-      )}
 
-      {/* =========================================================================
-          BƯỚC 2: MODAL XÁC NHẬN ĐẶT PHÒNG (ĐÚNG 100% THEO ẢNH 4)
-         ========================================================================= */}
-      {step === 'CONFIRM' && (
-        <div className="modal-box fade-in" style={{ maxWidth: '420px', width: '90vw', borderRadius: '12px', padding: '1.5rem' }}>
-          {/* Header với icon xanh dương tròn */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.25rem' }}>
-            <div style={{
-              width: '44px', height: '44px', borderRadius: '50%',
-              background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#0284c7'
-            }}>
-              <CalendarPlus size={24} />
-            </div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: '#0f172a', margin: 0 }}>
-              Xác nhận đặt phòng
-            </h3>
-          </div>
-
-          {/* Hộp bo góc hiển thị Phòng & Giờ (Giống hệt ảnh 4) */}
-          <div style={{
-            background: '#f8fafc',
-            border: '1px solid #e2e8f0',
-            borderRadius: '10px',
-            padding: '1.25rem',
-            marginBottom: '1.5rem'
-          }}>
-            <div style={{ fontSize: '1.15rem', fontWeight: '800', color: '#1e293b', marginBottom: '6px' }}>
-              Phòng: <span style={{ color: '#1e3a8a' }}>{room.id}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.95rem', fontWeight: '700', color: '#475569' }}>
-              <Clock size={16} color="#0284c7" />
-              <span>{startTime} – {endTime}</span>
-            </div>
-            <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '6px' }}>
-              {room.name} • 19/10/2026
-            </div>
-          </div>
-
-          {/* 2 Nút: Hủy (trái) và Đồng ý đặt (phải) */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-            <button
-              type="button"
-              onClick={() => setStep('TIME_SELECT')}
-              style={{
-                padding: '0.55rem 1.4rem',
-                borderRadius: '8px',
-                border: '1px solid #cbd5e1',
-                background: 'white',
-                color: '#475569',
-                fontWeight: '700',
-                fontSize: '0.9rem',
-                cursor: 'pointer'
-              }}
-            >
-              Hủy
-            </button>
-            <button
-              type="button"
-              onClick={handleConfirmSubmit}
-              disabled={loading}
-              style={{
-                padding: '0.55rem 1.6rem',
-                borderRadius: '8px',
-                border: 'none',
-                background: '#1e3a8a',
-                color: 'white',
-                fontWeight: '800',
-                fontSize: '0.9rem',
-                cursor: 'pointer',
-                boxShadow: '0 4px 10px rgba(30, 58, 138, 0.3)'
-              }}
-            >
-              {loading ? 'Đang gửi...' : 'Đồng ý đặt'}
-            </button>
-          </div>
+        {/* NÚT ĐIỀU HƯỚNG */}
+        <div className="flex justify-end items-center gap-3 pt-2 border-t border-slate-100">
+          <button 
+            onClick={() => setModalState({ ...modalState, isOpen: false })}
+            className="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-100 active:scale-95 transition cursor-pointer"
+          >
+            Hủy
+          </button>
+          <button 
+            onClick={onConfirm}
+            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-900 hover:from-sky-500 hover:to-indigo-950 text-white text-sm font-bold shadow-md shadow-sky-500/20 active:scale-95 transition duration-200 cursor-pointer"
+          >
+            Đồng ý đặt
+          </button>
         </div>
-      )}
+
+      </div>
     </div>
   );
 }

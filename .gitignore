@@ -4,3 +4,10 @@ build/
 .env
 *.env
 .DS_Store
+
+# SQLite temporary runtime files
+*.sqlite-shm
+*.sqlite-wal
+
+# Temp files
+client/api.json

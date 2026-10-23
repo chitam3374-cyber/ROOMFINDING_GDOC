@@ -1,381 +1,183 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, RefreshCw, LayoutGrid, List, Building2 } from 'lucide-react';
-import { getRooms } from '../services/api';
+import React, { useState, useMemo } from 'react';
+import { Sparkles, Building2, BookOpen, GraduationCap, FlaskConical, Search, X, SlidersHorizontal } from 'lucide-react';
 import RoomCard from '../components/RoomCard';
-import BookingModal from '../components/BookingModal';
 
-const BUILDINGS = ['Tất cả', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+export default function RoomsPage({ 
+  availableRooms, 
+  onOpenBookModal 
+}) {
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedBuilding, setSelectedBuilding] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
-export default function RoomsPage({ student, groupSize, onNavigate }) {
-  const [rooms, setRooms] = useState([]);
-  const [filtered, setFiltered] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
-  const [filterAvailable, setFilterAvailable] = useState(false);
-  const [filterBuilding, setFilterBuilding] = useState('Tất cả');
-  const [bookingRoom, setBookingRoom] = useState(null);
-  const [viewMode, setViewMode] = useState('grid');
+  const categories = [
+    { id: 'all', label: 'Tất cả loại phòng', icon: Building2, desc: '122 phòng' },
+    { id: 'Phòng học', label: 'Phòng học', icon: BookOpen, desc: '30 - 35 người' },
+    { id: 'Giảng đường', label: 'Giảng đường', icon: GraduationCap, desc: '80 - 150 người' },
+    { id: 'Phòng Lab', label: 'Phòng Lab', icon: FlaskConical, desc: '20 - 30 người' },
+  ];
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const data = await getRooms();
-      setRooms(data);
-    } catch (e) {
-      setError('Không tải được danh sách phòng: ' + (e.message || ''));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const buildings = [
+    { id: 'all', label: 'Tất cả tòa' },
+    { id: 'A1', label: 'Tòa A1' },
+    { id: 'A2', label: 'Tòa A2' },
+    { id: 'LA1', label: 'Tòa LA1 (Lab)' },
+    { id: 'LA2', label: 'Tòa LA2 (Lab)' },
+    { id: 'B', label: 'Tòa B' },
+  ];
 
-  useEffect(() => { load(); }, [load]);
+  // Lọc danh sách phòng theo Category, Tòa nhà và Từ khóa tìm kiếm
+  const filteredRooms = useMemo(() => {
+    if (!availableRooms) return [];
 
-  // Filter rooms
-  useEffect(() => {
-    let result = [...rooms];
+    return availableRooms.filter(room => {
+      // 1. Lọc theo Category
+      if (selectedCategory !== 'all') {
+        if (!room.category || !room.category.toLowerCase().includes(selectedCategory.toLowerCase())) {
+          return false;
+        }
+      }
 
-    if (groupSize && !isNaN(parseInt(groupSize))) {
-      const size = parseInt(groupSize);
-      result = result.filter(r => !r.capacityMin || r.capacityMin <= size);
-    }
+      // 2. Lọc theo Tòa nhà
+      if (selectedBuilding !== 'all') {
+        if (room.building !== selectedBuilding) {
+          return false;
+        }
+      }
 
-    if (filterAvailable) {
-      result = result.filter(r => r.isAvailableNow);
-    }
+      // 3. Lọc theo Ô tìm kiếm
+      if (searchQuery.trim()) {
+        const query = searchQuery.trim().toLowerCase();
+        const matchId = room.id.toLowerCase().includes(query);
+        const matchName = room.name ? room.name.toLowerCase().includes(query) : false;
+        if (!matchId && !matchName) return false;
+      }
 
-    if (filterBuilding !== 'Tất cả') {
-      result = result.filter(r => r.building === filterBuilding || r.name?.startsWith(filterBuilding));
-    }
-
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      result = result.filter(r =>
-        r.name?.toLowerCase().includes(q) ||
-        r.typeName?.toLowerCase().includes(q) ||
-        r.building?.toLowerCase().includes(q)
-      );
-    }
-
-    setFiltered(result);
-  }, [rooms, search, filterAvailable, filterBuilding, groupSize]);
-
-  const availableCount = filtered.filter(r => r.isAvailableNow).length;
+      return true;
+    });
+  }, [availableRooms, selectedCategory, selectedBuilding, searchQuery]);
 
   return (
-    <div style={{ padding: '2rem 0 3rem' }}>
-      <div className="container">
-        {/* Page header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          marginBottom: '1.5rem',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}>
+    <div className="space-y-8 animate-in fade-in duration-300">
+      {/* HEADER & THANH CÔNG CỤ LỌC CATEGORY */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-6 border-b border-slate-100">
           <div>
-            <h1 style={{ fontWeight: '900', fontSize: '1.6rem', color: '#1e3a8a', marginBottom: '0.25rem' }}>
-              🏫 Danh sách phòng
-            </h1>
-            {!loading && (
-              <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>
-                {availableCount} phòng trống / {filtered.length} phòng
-                {groupSize ? ` (lọc cho nhóm ${groupSize} người)` : ''}
-              </p>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-semibold mb-2 border border-sky-100">
+              <Sparkles className="w-3.5 h-3.5 text-sky-500" />
+              Khuôn viên trường ĐH Quốc Tế (HCMIU)
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              Phòng học & Giảng đường khả dụng
+            </h2>
+            <p className="text-sm text-slate-500 mt-1 flex flex-wrap items-center gap-2">
+              <span>Hiển thị <strong className="text-sky-700 font-bold">{filteredRooms.length}</strong> / {availableRooms?.length || 0} phòng</span>
+              <span>•</span>
+              <span className="text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 text-xs">
+                Sẵn sàng đặt chỗ
+              </span>
+            </p>
+          </div>
+
+          {/* Ô TÌM NHANH MÃ PHÒNG */}
+          <div className="relative w-full sm:w-72">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Tìm mã phòng (VD: A1.101, LA1.201)..." 
+              className="w-full pl-10 pr-8 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition shadow-inner"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
             )}
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={load}
-              disabled={loading}
-            >
-              <RefreshCw size={14} style={{ animation: loading ? 'spin 0.7s linear infinite' : 'none' }} />
-              Tải lại
-            </button>
-            <button
-              className={`btn btn-sm ${viewMode === 'grid' ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => setViewMode('grid')}
-            >
-              <LayoutGrid size={14} />
-            </button>
-            <button
-              className={`btn btn-sm ${viewMode === 'list' ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => setViewMode('list')}
-            >
-              <List size={14} />
-            </button>
-          </div>
         </div>
 
-        {/* Filters bar */}
-        <div className="card" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            {/* Search */}
-            <div style={{ position: 'relative', flex: '1', minWidth: '200px' }}>
-              <Search size={16} style={{
-                position: 'absolute', left: '10px', top: '50%',
-                transform: 'translateY(-50%)', color: '#9ca3af',
-              }} />
-              <input
-                className="form-input"
-                placeholder="Tìm kiếm phòng..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                style={{ paddingLeft: '34px' }}
-              />
-            </div>
+        {/* BỘ LỌC PHÂN LOẠI CATEGORY */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wide">
+            <SlidersHorizontal className="w-3.5 h-3.5 text-sky-600" />
+            Phân loại phòng:
+          </div>
 
-            {/* Available only toggle */}
-            <label style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              cursor: 'pointer', fontSize: '0.875rem', fontWeight: '600',
-              color: filterAvailable ? '#1e3a8a' : '#6b7280',
-              whiteSpace: 'nowrap',
-            }}>
-              <div style={{
-                position: 'relative',
-                width: '36px', height: '20px',
-              }}
-                onClick={() => setFilterAvailable(v => !v)}
-              >
-                <div style={{
-                  width: '36px', height: '20px',
-                  borderRadius: '10px',
-                  background: filterAvailable ? '#1e3a8a' : '#d1d5db',
-                  transition: 'background 0.2s',
-                  cursor: 'pointer',
-                }} />
-                <div style={{
-                  position: 'absolute',
-                  top: '2px',
-                  left: filterAvailable ? '18px' : '2px',
-                  width: '16px', height: '16px',
-                  borderRadius: '50%',
-                  background: 'white',
-                  transition: 'left 0.2s',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                }} />
-              </div>
-              Chỉ phòng trống
-            </label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {categories.map((cat) => {
+              const Icon = cat.icon;
+              const isSelected = selectedCategory === cat.id;
 
-            {/* Building filter */}
-            <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-              {BUILDINGS.slice(0, 5).map(b => (
+              return (
                 <button
-                  key={b}
-                  onClick={() => setFilterBuilding(b)}
-                  style={{
-                    padding: '0.3rem 0.75rem',
-                    borderRadius: '8px',
-                    border: `1.5px solid ${filterBuilding === b ? '#1e3a8a' : '#e5e7eb'}`,
-                    background: filterBuilding === b ? '#1e3a8a' : 'white',
-                    color: filterBuilding === b ? 'white' : '#374151',
-                    fontWeight: '600',
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                    transition: 'all 0.15s',
-                  }}
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`p-3.5 rounded-2xl border text-left transition-all duration-200 cursor-pointer flex items-center gap-3 ${
+                    isSelected
+                      ? 'bg-gradient-to-r from-sky-600 to-indigo-800 text-white border-transparent shadow-md shadow-sky-900/20 scale-101'
+                      : 'bg-slate-50/80 hover:bg-slate-100/80 border-slate-200 text-slate-700'
+                  }`}
                 >
-                  {b}
+                  <div className={`p-2 rounded-xl shrink-0 ${
+                    isSelected ? 'bg-white/20 text-white' : 'bg-white text-sky-700 shadow-2xs border border-slate-200/60'
+                  }`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs sm:text-sm font-bold truncate">{cat.label}</div>
+                    <div className={`text-[11px] font-medium truncate ${isSelected ? 'text-sky-100' : 'text-slate-400'}`}>
+                      {cat.desc}
+                    </div>
+                  </div>
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        </div>
 
-        {/* Error */}
-        {error && (
-          <div style={{
-            background: '#fef2f2', border: '1px solid #fecaca',
-            borderRadius: '8px', padding: '1rem 1.25rem',
-            color: '#dc2626', marginBottom: '1.5rem',
-          }}>
-            {error}
-          </div>
-        )}
-
-        {/* Loading skeleton */}
-        {loading && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-            gap: '1rem',
-          }}>
-            {[...Array(12)].map((_, i) => (
-              <div key={i} style={{
-                background: '#e2e8f0',
-                borderRadius: '10px',
-                height: '160px',
-                animation: 'shimmer 1.5s ease-in-out infinite',
-                opacity: 1 - (i % 4) * 0.1,
-              }} />
+          {/* BỘ LỌC TÒA NHÀ (BUILDINGS) */}
+          <div className="flex items-center gap-2 pt-2 overflow-x-auto pb-1">
+            <span className="text-xs font-bold text-slate-500 whitespace-nowrap">Tòa nhà:</span>
+            {buildings.map((b) => (
+              <button
+                key={b.id}
+                onClick={() => setSelectedBuilding(b.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+                  selectedBuilding === b.id
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'bg-slate-100 hover:bg-slate-200/80 text-slate-600'
+                }`}
+              >
+                {b.label}
+              </button>
             ))}
           </div>
-        )}
-
-        {/* No results */}
-        {!loading && !error && filtered.length === 0 && (
-          <div style={{
-            textAlign: 'center',
-            padding: '4rem 2rem',
-            background: 'white',
-            borderRadius: '10px',
-            color: '#9ca3af',
-            border: '1px solid #e5e7eb',
-          }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
-            <div style={{ fontWeight: '700', fontSize: '1.1rem', color: '#6b7280', marginBottom: '0.5rem' }}>
-              Không tìm thấy phòng phù hợp
-            </div>
-            <div style={{ fontSize: '0.875rem' }}>
-              Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm
-            </div>
-          </div>
-        )}
-
-        {/* Room grid */}
-        {!loading && filtered.length > 0 && (
-          viewMode === 'grid' ? (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-              gap: '1rem',
-            }}>
-              {filtered.map(room => (
-                <RoomCard
-                  key={room.id}
-                  room={room}
-                  onBook={student ? () => setBookingRoom(room) : null}
-                />
-              ))}
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              {filtered.map(room => (
-                <RoomListItem
-                  key={room.id}
-                  room={room}
-                  onBook={student ? () => setBookingRoom(room) : null}
-                />
-              ))}
-            </div>
-          )
-        )}
-
-        {/* No student warning */}
-        {!student && !loading && filtered.length > 0 && (
-          <div style={{
-            marginTop: '1.5rem',
-            background: '#fffbeb',
-            border: '1px solid #fde68a',
-            borderRadius: '8px',
-            padding: '0.875rem 1.25rem',
-            fontSize: '0.875rem',
-            color: '#92400e',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}>
-            ⚠️ Để đặt phòng, vui lòng{' '}
-            <button
-              onClick={() => onNavigate('home')}
-              style={{
-                background: 'none', border: 'none',
-                color: '#1e3a8a', fontWeight: '700',
-                cursor: 'pointer', textDecoration: 'underline',
-                fontFamily: 'inherit', fontSize: 'inherit',
-              }}
-            >
-              nhập thông tin sinh viên
-            </button>{' '}
-            tại trang chủ.
-          </div>
-        )}
-      </div>
-
-      {bookingRoom && student && (
-        <BookingModal
-          room={bookingRoom}
-          student={student}
-          onClose={() => setBookingRoom(null)}
-          onSuccess={() => { setBookingRoom(null); load(); }}
-        />
-      )}
-
-      <style>{`
-        @keyframes shimmer {
-          0%, 100% { opacity: 0.7; }
-          50% { opacity: 0.4; }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-function RoomListItem({ room, onBook }) {
-  const available = room.isAvailableNow;
-  return (
-    <div style={{
-      background: 'white',
-      border: '1.5px solid #e5e7eb',
-      borderRadius: '10px',
-      padding: '0.875rem 1.25rem',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '1rem',
-      transition: 'box-shadow 0.15s, border-color 0.15s',
-    }}
-      onMouseEnter={e => {
-        e.currentTarget.style.boxShadow = '0 4px 12px rgba(30,58,138,0.1)';
-        e.currentTarget.style.borderColor = '#93c5fd';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.boxShadow = 'none';
-        e.currentTarget.style.borderColor = '#e5e7eb';
-      }}
-    >
-      <div style={{
-        width: '44px', height: '44px',
-        background: '#1e3a8a',
-        borderRadius: '8px',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: 'white', fontWeight: '800', fontSize: '0.75rem',
-        flexShrink: 0,
-        textAlign: 'center',
-        lineHeight: 1.1,
-      }}>
-        <Building2 size={20} />
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: '700', color: '#1e3a8a', fontSize: '1rem' }}>{room.name}</div>
-        <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '2px' }}>
-          {[room.typeName, room.capacityDisplay, room.building && `Tòa ${room.building}`].filter(Boolean).join(' • ')}
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <span style={{
-          padding: '3px 10px', borderRadius: '6px',
-          background: available ? '#dcfce7' : '#f3f4f6',
-          color: available ? '#15803d' : '#6b7280',
-          fontWeight: '700', fontSize: '0.75rem',
-          border: `1px solid ${available ? '#bbf7d0' : '#e5e7eb'}`,
-        }}>
-          {available ? 'TRỐNG' : 'ĐÃ ĐẶT'}
-        </span>
-        {available && onBook && (
-          <button
-            onClick={onBook}
-            className="btn btn-primary btn-sm"
-          >
-            Đặt ngay
-          </button>
-        )}
-      </div>
+
+      {/* LƯỚI CARD PHÒNG HIỆN ĐẠI HOẶC EMPTY STATE */}
+      {filteredRooms.length === 0 ? (
+        <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 max-w-md mx-auto my-12 shadow-sm">
+          <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+          <h3 className="font-bold text-slate-800 text-lg">Không tìm thấy phòng phù hợp</h3>
+          <p className="text-sm text-slate-500 mt-1">
+            Vui lòng thử chọn phân loại khác hoặc xóa từ khóa tìm kiếm.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filteredRooms.map((room) => (
+            <RoomCard 
+              key={room.id} 
+              room={room} 
+              onBook={onOpenBookModal} 
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
