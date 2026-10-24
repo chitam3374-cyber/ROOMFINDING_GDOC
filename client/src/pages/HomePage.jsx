@@ -1,7 +1,80 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Users, ArrowRight, ShieldAlert, CheckCircle, Ban, AlertTriangle, Sparkles, LogIn, UserPlus, Clock } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Users, ArrowRight, ShieldAlert, CheckCircle, Ban, AlertTriangle, Sparkles, LogIn, UserPlus, Clock, MessageSquareQuote, Star, Heart, BadgeCheck, Quote } from 'lucide-react';
 import RoomCard from '../components/RoomCard';
 import BookingBanner from '../components/BookingBanner';
+
+const celebrityComments = [
+  {
+    id: 1,
+    name: 'Elon Musk',
+    handle: '@elonmusk',
+    role: 'CEO Tesla & SpaceX • Chủ sở hữu X',
+    avatar: '/avatars/elon_musk.png',
+    content: 'Tôi đã tạo ra xe bay rồi, nhưng chưa thấy ai tạo ra web đặt phòng "bay" như web IU RoomPeek!',
+    likes: '420K',
+    time: '15 phút trước'
+  },
+  {
+    id: 2,
+    name: 'Mr.Beast',
+    handle: '@mrbeast',
+    role: 'Top 1 Creator Thế giới • 350M+ Subs',
+    avatar: '/avatars/mr_beast.jpg',
+    content: 'Nếu tôi có tổ chức cuộc thi thiết kế web đặt phòng, chắc chắn giải thưởng 1 triệu dollar sẽ thuộc về IU RoomPeek.',
+    likes: '1.2M',
+    time: '1 giờ trước'
+  },
+  {
+    id: 3,
+    name: 'Sơn Tùng M-TP',
+    handle: '@sontungmtp',
+    role: 'Chủ tịch M-TP Entertainment • Ca sĩ',
+    avatar: '/avatars/son_tung.png',
+    content: 'Flop quá thì ghi tên anh vào.',
+    likes: '777K',
+    time: '2 giờ trước'
+  },
+  {
+    id: 4,
+    name: 'Mark Zuckerberg',
+    handle: '@zuck',
+    role: 'Nhà sáng lập & CEO Meta',
+    avatar: '/avatars/mark_zuckerberg.png',
+    content: 'Công nhận anh chị trong Google Developer Groups on Campus đẹp trai xinh gái thật!',
+    likes: '350K',
+    time: '3 giờ trước'
+  },
+  {
+    id: 5,
+    name: 'Bill Gates',
+    handle: '@BillGates',
+    role: 'Đồng sáng lập Microsoft',
+    avatar: '/avatars/bill_gates.jpg',
+    content: 'Windows có thể cập nhật liên tục, nhưng sự mượt mà của IU RoomPeek thì không cần chỉnh sửa thêm gì nữa — quá hoàn hảo!',
+    likes: '512K',
+    time: '5 giờ trước'
+  },
+  {
+    id: 6,
+    name: 'Steve Jobs',
+    handle: '@stevejobs',
+    role: 'Huyền thoại sáng lập Apple',
+    avatar: '/avatars/steve_jobs.png',
+    content: 'Thật không thể, khổng thể tin nổi!',
+    likes: '999K',
+    time: 'Hôm qua'
+  },
+  {
+    id: 7,
+    name: 'Cristiano Ronaldo',
+    handle: '@cristiano',
+    role: 'Huyền thoại bóng đá thế giới • 5 Quả bóng vàng',
+    avatar: '/avatars/ronaldo.png',
+    content: 'Siuuuu! Tốc độ đặt phòng ở IU RoomPeek còn nhanh hơn cả những pha bứt tốc của tôi ở đỉnh cao phong độ!',
+    likes: '888K',
+    time: 'Hôm qua'
+  }
+];
 
 export default function HomePage({
   studentInput, setStudentInput,
@@ -51,6 +124,132 @@ export default function HomePage({
       phoneTimeS: s
     };
   }, [clockDate, simulatedTime]);
+
+  // Quản lý băng chuyền phòng nhanh mượt mà qua RAF (RequestAnimationFrame)
+  const trackRef = useRef(null);
+  const posRef = useRef(0);
+  const singleWidthRef = useRef(0);
+  const isPausedRef = useRef(false);
+  const hasCenteredRef = useRef(false);
+  const mainRafRef = useRef(null);
+  const slideRafRef = useRef(null);
+  const lastTimeRef = useRef(performance.now());
+
+  // Đảm bảo đủ danh sách lặp (3 bộ) để chạy vô tận không bị hở mép
+  const displayMarqueeRooms = useMemo(() => {
+    if (!marqueeRooms || marqueeRooms.length === 0) return [];
+    let list = marqueeRooms;
+    while (list.length < 8) {
+      list = [...list, ...marqueeRooms];
+    }
+    return [...list, ...list, ...list];
+  }, [marqueeRooms]);
+
+  useEffect(() => {
+    if (!displayMarqueeRooms || displayMarqueeRooms.length === 0) return;
+
+    // Chiều dài 1 bộ phòng (288px width + 16px gap = 304px mỗi phòng)
+    const singleWidth = (displayMarqueeRooms.length / 3) * 304;
+    singleWidthRef.current = singleWidth;
+
+    // Đặt vị trí bắt đầu tại bộ thứ 2 (-singleWidth) để 2 bên trái phải luôn có sẵn thẻ
+    if (posRef.current === 0) {
+      posRef.current = -singleWidth;
+      if (trackRef.current) {
+        trackRef.current.style.transform = `translate3d(${posRef.current}px, 0, 0)`;
+      }
+    }
+
+    const speed = 40; // pixel/giây - trượt đều êm dịu
+    lastTimeRef.current = performance.now();
+
+    const loop = (now) => {
+      const dt = Math.min((now - lastTimeRef.current) / 1000, 0.1);
+      lastTimeRef.current = now;
+
+      // Khi không tạm dừng và không đang trượt căn giữa
+      if (!isPausedRef.current && !slideRafRef.current) {
+        posRef.current -= speed * dt;
+
+        // Vòng lặp vô tận: khi đi hết bộ 2 sang bộ 3, dịch lại đúng 1 chu kỳ (-singleWidth)
+        if (posRef.current <= -2 * singleWidthRef.current) {
+          posRef.current += singleWidthRef.current;
+        } else if (posRef.current > -singleWidthRef.current * 0.2) {
+          posRef.current -= singleWidthRef.current;
+        }
+
+        if (trackRef.current) {
+          trackRef.current.style.transform = `translate3d(${posRef.current}px, 0, 0)`;
+        }
+      }
+
+      mainRafRef.current = requestAnimationFrame(loop);
+    };
+
+    mainRafRef.current = requestAnimationFrame(loop);
+
+    return () => {
+      if (mainRafRef.current) cancelAnimationFrame(mainRafRef.current);
+      if (slideRafRef.current) cancelAnimationFrame(slideRafRef.current);
+    };
+  }, [displayMarqueeRooms]);
+
+  const handleCardMouseEnter = (e) => {
+    // Tạm dừng chạy ngay lập tức
+    isPausedRef.current = true;
+
+    // CHỈ căn giữa vào lần hover đầu tiên vào card
+    if (!hasCenteredRef.current) {
+      hasCenteredRef.current = true;
+
+      const cardRect = e.currentTarget.getBoundingClientRect();
+      const cardCenterX = cardRect.left + cardRect.width / 2;
+      const mouseX = e.clientX;
+      const deltaX = mouseX - cardCenterX;
+
+      if (slideRafRef.current) {
+        cancelAnimationFrame(slideRafRef.current);
+        slideRafRef.current = null;
+      }
+
+      const startPos = posRef.current;
+      const targetPos = startPos + deltaX;
+      const startTime = performance.now();
+      const duration = 380; // ms
+
+      const animateSlide = (now) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Easing mượt mà: easeOutCubic
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const currentPos = startPos + (targetPos - startPos) * ease;
+
+        posRef.current = currentPos;
+        if (trackRef.current) {
+          trackRef.current.style.transform = `translate3d(${currentPos}px, 0, 0)`;
+        }
+
+        if (progress < 1) {
+          slideRafRef.current = requestAnimationFrame(animateSlide);
+        } else {
+          slideRafRef.current = null;
+        }
+      };
+
+      slideRafRef.current = requestAnimationFrame(animateSlide);
+    }
+  };
+
+  const handleMarqueeContainerMouseLeave = () => {
+    // Khi rời chuột: cho chạy tiếp từ ĐÚNG VỊ TRÍ ĐANG ĐỨNG, không nhảy hay reset về vị trí cũ!
+    hasCenteredRef.current = false;
+    if (slideRafRef.current) {
+      cancelAnimationFrame(slideRafRef.current);
+      slideRafRef.current = null;
+    }
+    isPausedRef.current = false;
+    lastTimeRef.current = performance.now();
+  };
 
   return (
     <div className="space-y-12">
@@ -251,28 +450,97 @@ export default function HomePage({
         </div>
       </div>
 
-      {/* MỤC "⚡ CHỌN PHÒNG NHANH" (BĂNG CHUYỀN) */}
+      {/* MỤC "CHỌN PHÒNG NHANH" (BĂNG CHUYỀN) */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-black text-slate-800 flex items-center gap-2 tracking-tight">
-            <span className="text-amber-500 text-2xl">⚡</span> Chọn phòng nhanh
+          <h3 className="text-xl font-black text-slate-800 tracking-tight">
+            Chọn phòng nhanh
           </h3>
           <span className="text-xs text-emerald-800 bg-emerald-50 font-bold px-3 py-1 rounded-full border border-emerald-200 shadow-2xs">
             Chỉ hiển thị {marqueeRooms.length} phòng đang TRỐNG
           </span>
         </div>
 
-        <div className="overflow-hidden relative w-full rounded-2xl py-2">
-          <div className="flex gap-4 animate-marquee pause-hover w-max">
-            {[...marqueeRooms, ...marqueeRooms].map((room, idx) => (
-              <RoomCard 
-                key={`${room.id}-${idx}`} 
-                room={room} 
-                onBook={onOpenBookModal} 
-                isMarquee={true} 
-              />
+        <div 
+          className="overflow-hidden relative w-full rounded-2xl pt-3 pb-8 -mb-6 px-1"
+          onMouseLeave={handleMarqueeContainerMouseLeave}
+        >
+          <div 
+            ref={trackRef}
+            className="flex gap-4 w-max will-change-transform py-1"
+          >
+            {displayMarqueeRooms.map((room, idx) => (
+              <div 
+                key={`${room.id}-${idx}`}
+                onMouseEnter={handleCardMouseEnter}
+                className="w-72 flex-shrink-0"
+              >
+                <RoomCard 
+                  room={room} 
+                  onBook={onOpenBookModal} 
+                  isMarquee={true} 
+                />
+              </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* MỤC "BÌNH LUẬN" */}
+      <div className="space-y-4 pt-4 pb-8">
+        <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
+          <h3 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
+            Bình luận
+          </h3>
+          <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200 shadow-2xs">
+            {celebrityComments.length} bình luận
+          </span>
+        </div>
+
+        {/* DANH SÁCH BÌNH LUẬN THEO HÀNG DỌC */}
+        <div className="flex flex-col space-y-3.5">
+          {celebrityComments.map((c) => (
+            <div 
+              key={c.id}
+              className="bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md hover:border-sky-300 transition-all duration-200 group flex items-start gap-3.5 sm:gap-4"
+            >
+              <img 
+                src={c.avatar} 
+                alt={c.name}
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl object-cover ring-2 ring-slate-100 shadow-sm group-hover:ring-sky-400 transition duration-300 shrink-0" 
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center justify-between gap-1.5 mb-1">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <h4 className="font-black text-slate-900 text-sm sm:text-base tracking-tight">
+                      {c.name}
+                    </h4>
+                    <BadgeCheck className="w-4 h-4 fill-sky-500 text-white shrink-0" />
+                    <span className="text-[11px] font-medium text-slate-400 font-mono">
+                      {c.handle}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-400 font-medium shrink-0">
+                    {c.time}
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed mt-1.5 pr-2">
+                  “{c.content}”
+                </p>
+                <div className="flex items-center gap-4 mt-2.5 pt-2 border-t border-slate-100/80 text-xs text-slate-500">
+                  <div className="flex items-center gap-1.5 text-rose-500 font-bold">
+                    <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
+                    <span>{c.likes}</span>
+                  </div>
+                  <div className="flex text-amber-400 items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <Star key={s} className="w-3 h-3 fill-amber-400" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

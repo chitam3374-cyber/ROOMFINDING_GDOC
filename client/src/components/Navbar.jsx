@@ -85,15 +85,13 @@ export default function Navbar({ onOpenSchedule, devMode, setDevMode, activeBook
         {/* LOGO & BRAND NAME */}
         <div 
           onClick={() => navigate('/homepage')}
-          className="flex items-center gap-3.5 cursor-pointer group select-none py-1"
+          className="flex items-center gap-3 cursor-pointer group select-none py-1"
         >
-          <div className="relative flex items-center justify-center p-1.5 rounded-2xl bg-gradient-to-br from-sky-50 to-blue-100 border border-sky-200/60 shadow-xs group-hover:shadow transition duration-200">
-            <img 
-              src="/logo.png" 
-              alt="Logo HCMIU" 
-              className="h-9 w-auto object-contain transition-transform duration-200 group-hover:scale-105" 
-            />
-          </div>
+          <img 
+            src="/logo_nobg.png" 
+            alt="Logo IU RoomPeek" 
+            className="h-10 w-auto object-contain transition-transform duration-200 group-hover:scale-105" 
+          />
           <div>
             <div className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-1 leading-none">
               <span>IU</span>

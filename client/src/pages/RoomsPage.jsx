@@ -63,10 +63,6 @@ export default function RoomsPage({
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-6">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-6 border-b border-slate-100">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-semibold mb-2 border border-sky-100">
-              <Sparkles className="w-3.5 h-3.5 text-sky-500" />
-              Khuôn viên trường ĐH Quốc Tế (HCMIU)
-            </div>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               Phòng học & Giảng đường khả dụng
             </h2>

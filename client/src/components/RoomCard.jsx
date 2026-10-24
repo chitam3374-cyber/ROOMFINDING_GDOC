@@ -12,10 +12,10 @@ export default function RoomCard({ room, onBook, isMarquee = false }) {
         isMarquee ? 'w-72 flex-shrink-0' : 'w-full'
       } group bg-white rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden relative`}
     >
-      {/* PHẦN HEADER: Nền Gradient sắc nét & Huy hiệu trạng thái */}
-      <div className="bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-900 text-white p-5 relative overflow-hidden">
+      {/* PHẦN HEADER: Nền Gradient xanh dương sắc nét & Huy hiệu trạng thái */}
+      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 text-white p-5 relative overflow-hidden">
         {/* Vệt sáng trang trí chìm */}
-        <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-sky-500/10 rounded-full blur-xl group-hover:bg-sky-500/25 transition-all duration-500"></div>
+        <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-sky-400/20 rounded-full blur-xl group-hover:bg-sky-400/35 transition-all duration-500"></div>
 
         <div className="flex items-center justify-between relative z-10">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-300 bg-emerald-950/70 border border-emerald-500/30 px-2.5 py-0.5 rounded-full tracking-wide">
@@ -23,14 +23,14 @@ export default function RoomCard({ room, onBook, isMarquee = false }) {
             TRỐNG
           </span>
 
-          <span className="text-xs text-slate-300 flex items-center gap-1 font-medium bg-white/10 px-2 py-0.5 rounded-md backdrop-blur-xs">
-            <MapPin className="w-3.5 h-3.5 text-sky-400" />
+          <span className="text-xs text-slate-200 flex items-center gap-1 font-medium bg-white/15 px-2 py-0.5 rounded-md backdrop-blur-xs">
+            <MapPin className="w-3.5 h-3.5 text-sky-300" />
             Tòa {buildingName} - Tầng {floorNumber}
           </span>
         </div>
 
         {/* Mã phòng to đậm */}
-        <div className="text-3xl font-black tracking-wider text-white mt-3 group-hover:text-sky-300 transition-colors">
+        <div className="text-3xl font-black tracking-wider text-white mt-3 group-hover:text-sky-200 transition-colors">
           {room.id}
         </div>
       </div>
