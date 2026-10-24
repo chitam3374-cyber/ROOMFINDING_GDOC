@@ -297,31 +297,27 @@ export default function HomePage({
               {!currentUser ? (
               /* TRƯỜNG HỢP CHƯA ĐĂNG NHẬP */
               <div className="text-center py-4 space-y-4">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-100/90 text-sky-800 text-xs font-bold border border-sky-200">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  Hệ thống Mượn phòng Sinh viên HCMIU
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                  Chào mừng đến với <span className="bg-gradient-to-r from-sky-600 to-indigo-700 bg-clip-text text-transparent">IU RoomPeek</span>
+                <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                  IU <span className="bg-gradient-to-r from-sky-600 to-indigo-700 bg-clip-text text-transparent">RoomPeek</span>
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-                  Hệ thống đặt phòng học nhóm & phòng thực hành thông minh. Vui lòng đăng nhập bằng <strong>Email sinh viên trường ĐH Quốc Tế (@student.hcmiu.edu.vn)</strong> để tiếp tục.
+                <p className="text-sm sm:text-base text-slate-600 font-medium max-w-md mx-auto leading-relaxed">
+                  Đặt phòng nhanh, thật bá khí
                 </p>
 
                 <div className="pt-3 flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto">
                   <button 
                     onClick={() => onOpenAuth('login')}
-                    className="flex-1 py-3 px-5 bg-gradient-to-r from-sky-600 to-indigo-900 hover:from-sky-500 hover:to-indigo-950 text-white font-bold rounded-2xl shadow-lg shadow-sky-900/20 transition flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                    className="flex-1 py-3 px-5 bg-blue-900 hover:bg-[#17f2ee] hover:text-slate-900 text-white font-bold rounded-2xl shadow-md hover:shadow-cyan-400/30 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                   >
                     <LogIn className="w-4 h-4" />
-                    Đăng nhập ngay
+                    Đăng nhập
                   </button>
                   <button 
                     onClick={() => onOpenAuth('register')}
                     className="flex-1 py-3 px-5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold rounded-2xl shadow-xs transition flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                   >
                     <UserPlus className="w-4 h-4" />
-                    Đăng ký tài khoản
+                    Đăng ký
                   </button>
                 </div>
               </div>
@@ -336,9 +332,6 @@ export default function HomePage({
                     <div>
                       <div className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
                         <span>{currentUser.fullName}</span>
-                        <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200">
-                          Sinh viên IU
-                        </span>
                       </div>
                       <div className="text-xs text-slate-500 font-medium mt-0.5">
                         MSSV: <strong className="text-sky-700 font-mono font-bold">{currentUser.studentId}</strong> • {currentUser.email}
@@ -440,8 +433,8 @@ export default function HomePage({
 
               <div className="mt-4 pt-3 border-t border-slate-200 text-xs text-slate-600 space-y-1 font-medium">
                 <p className="font-bold text-slate-800">Quy tắc chế tài:</p>
-                <p>• Không nhận phòng (&gt;10p): Cảnh cáo → Khóa 30 ngày → Khóa vĩnh viễn.</p>
-                <p>• Trả phòng: Cho phép trả phòng trong khung 30p trước và 30p sau giờ kết thúc ca. Quá 30p sau giờ kết thúc sẽ phạt: Cảnh cáo → Khóa 7 ngày → Khóa 30 ngày → Cấm vĩnh viễn.</p>
+                <p>• Không bấm nhận phòng (&gt;10p): Khóa 7 ngày → Khóa 30 ngày → Khóa vĩnh viễn.</p>
+                <p>• Không bấm trả phòng (&gt;30p): Cảnh cáo → Khóa 7 ngày → Khóa 30 ngày → Cấm vĩnh viễn.</p>
                 <p>• Hủy phòng: Tối đa 3 lần miễn phí/ngày. Từ lần thứ 4 trở đi (cả hôm nay hoặc tương lai) sẽ hủy phòng và tạm cấm đặt 10 phút kèm cảnh cáo.</p>
               </div>
             </div>

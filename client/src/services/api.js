@@ -3,6 +3,17 @@ const API_BASE = 'http://localhost:5000/api';
 
 let currentSimulatedTime = null;
 
+// Khởi tạo ngay từ localStorage nếu người dùng đã bật DevMode
+try {
+  const saved = localStorage.getItem('iurp_devmode');
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    if (parsed.enabled && parsed.customTime) {
+      currentSimulatedTime = parsed.customTime;
+    }
+  }
+} catch {}
+
 export const setSimulatedTime = (time) => {
   currentSimulatedTime = time;
 };
@@ -13,6 +24,8 @@ const getHeaders = (extra = {}) => {
   const h = { 'Content-Type': 'application/json', ...extra };
   if (currentSimulatedTime) {
     h['x-simulated-time'] = currentSimulatedTime;
+  } else {
+    h['x-simulated-time'] = 'REAL_TIME';
   }
   return h;
 };
@@ -48,26 +61,26 @@ export const api = {
 
   // Lấy danh sách phòng marquee chạy ngang
   getMarqueeRooms: async () => {
-    const res = await fetch(`${API_BASE}/rooms/marquee`);
+    const res = await fetch(`${API_BASE}/rooms/marquee`, { headers: getHeaders() });
     return res.json();
   },
 
   // Lấy ma trận lịch 140 phòng (hỗ trợ truyền ngày dạng YYYY-MM-DD)
   getScheduleMatrix: async (date = '') => {
     const url = date ? `${API_BASE}/rooms/schedule-matrix?date=${date}` : `${API_BASE}/rooms/schedule-matrix`;
-    const res = await fetch(url);
+    const res = await fetch(url, { headers: getHeaders() });
     return res.json();
   },
 
   // Lấy phòng khả dụng theo số người
   getAvailableRooms: async (memberCount) => {
-    const res = await fetch(`${API_BASE}/rooms/available?memberCount=${memberCount || 1}`);
+    const res = await fetch(`${API_BASE}/rooms/available?memberCount=${memberCount || 1}`, { headers: getHeaders() });
     return res.json();
   },
 
   // Kiểm tra sinh viên & trạng thái đặt phòng
   checkStudent: async (studentId) => {
-    const res = await fetch(`${API_BASE}/students/${studentId.trim()}/check`);
+    const res = await fetch(`${API_BASE}/students/${studentId.trim()}/check`, { headers: getHeaders() });
     return res.json();
   },
 
@@ -119,12 +132,18 @@ export const api = {
 
   // Test vi phạm
   timeoutNoShow: async (bookingId) => {
-    const res = await fetch(`${API_BASE}/bookings/${bookingId}/timeout-noshow`, { method: 'POST' });
+    const res = await fetch(`${API_BASE}/bookings/${bookingId}/timeout-noshow`, { 
+      method: 'POST',
+      headers: getHeaders() 
+    });
     return res.json();
   },
 
   timeoutLateCheckout: async (bookingId) => {
-    const res = await fetch(`${API_BASE}/bookings/${bookingId}/timeout-latecheckout`, { method: 'POST' });
+    const res = await fetch(`${API_BASE}/bookings/${bookingId}/timeout-latecheckout`, { 
+      method: 'POST',
+      headers: getHeaders() 
+    });
     return res.json();
   },
 

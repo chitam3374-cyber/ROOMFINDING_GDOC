@@ -23,6 +23,55 @@ export default function Navbar({ onOpenSchedule, devMode, setDevMode, activeBook
     return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
   };
 
+  // State hỗ trợ nhập giờ DevMode dạng text 24h tự do (không bị AM/PM)
+  const [devTimeInput, setDevTimeInput] = useState('');
+  const [isEditingDevTime, setIsEditingDevTime] = useState(false);
+
+  useEffect(() => {
+    if (!isEditingDevTime) {
+      setDevTimeInput((devMode?.customTime || getRealTimeNow()).slice(0, 5));
+    }
+  }, [devMode?.customTime, isEditingDevTime]);
+
+  const handleDevTimeInputChange = (val) => {
+    let filtered = val.replace(/[^0-9:]/g, '');
+    if (filtered.length > 5) filtered = filtered.slice(0, 5);
+    if (filtered.length === 2 && !filtered.includes(':') && !val.endsWith(':')) {
+      filtered = `${filtered}:`;
+    }
+    setDevTimeInput(filtered);
+  };
+
+  const handleDevTimeInputBlur = () => {
+    setIsEditingDevTime(false);
+    let clean = (devTimeInput || '').trim();
+    if (!clean) {
+      clean = getRealTimeNow();
+    } else if (!clean.includes(':')) {
+      if (clean.length <= 2) {
+        clean = `${clean.padStart(2, '0')}:00`;
+      } else if (clean.length === 3) {
+        clean = `0${clean[0]}:${clean.slice(1)}`;
+      } else if (clean.length >= 4) {
+        clean = `${clean.slice(0, 2)}:${clean.slice(2, 4)}`;
+      }
+    } else {
+      const parts = clean.split(':');
+      let h = Math.min(23, Math.max(0, parseInt(parts[0] || '0', 10)));
+      let m = Math.min(59, Math.max(0, parseInt(parts[1] || '0', 10)));
+      clean = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+
+    setDevTimeInput(clean);
+    const withSec = `${clean}:00`;
+    setDevMode(prev => ({
+      ...prev,
+      customTime: withSec,
+      baseTime: withSec,
+      setAt: Date.now()
+    }));
+  };
+
   const toMinutes = (timeStr) => {
     if (!timeStr) return 0;
     const [h, m] = timeStr.split(':').map(Number);
@@ -222,7 +271,7 @@ export default function Navbar({ onOpenSchedule, devMode, setDevMode, activeBook
                   <div className="pt-3 space-y-3">
                     {/* Time Picker with Auto-fill real time */}
                     <div>
-                      <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center justify-between mb-1.5">
                         <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
                           <Clock className="w-3.5 h-3.5 text-amber-600" />
                           Giờ giả lập đang test:
@@ -231,6 +280,8 @@ export default function Navbar({ onOpenSchedule, devMode, setDevMode, activeBook
                           type="button"
                           onClick={() => {
                             const nowTime = getRealTimeWithSeconds();
+                            setDevTimeInput(nowTime.slice(0, 5));
+                            setIsEditingDevTime(false);
                             setDevMode(prev => ({
                               ...prev,
                               customTime: nowTime,
@@ -241,27 +292,38 @@ export default function Navbar({ onOpenSchedule, devMode, setDevMode, activeBook
                           className="text-[10px] text-amber-800 hover:text-amber-950 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded font-bold cursor-pointer transition shadow-2xs"
                           title="Lấy giờ hiện tại của máy tính tự điền vào đây"
                         >
-                          🕒 Tự điền giờ thực ({getRealTimeNow()})
+                          🕒 Giờ thực ({getRealTimeNow()})
                         </button>
                       </div>
-                      <input 
-                        type="time" 
-                        value={(devMode.customTime || getRealTimeNow()).slice(0, 5)}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const withSec = val.length === 5 ? `${val}:00` : val;
-                          setDevMode(prev => ({
-                            ...prev,
-                            customTime: withSec,
-                            baseTime: withSec,
-                            setAt: Date.now()
-                          }));
-                        }}
-                        className="w-full px-3 py-1.5 text-sm font-mono font-bold text-slate-800 bg-amber-50/50 border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-center"
-                      />
-                      <p className="text-[10px] text-slate-500 mt-1 italic">
-                        * Giờ giả lập sẽ tự động chạy tiếp từng giây như thời gian thực.
-                      </p>
+
+                      {/* Ô nhập giờ dạng 24h tự do không bị AM/PM */}
+                      <div className="relative">
+                        <input 
+                          type="text" 
+                          inputMode="numeric"
+                          placeholder="00:00 - 23:59"
+                          value={devTimeInput}
+                          onFocus={() => setIsEditingDevTime(true)}
+                          onChange={(e) => handleDevTimeInputChange(e.target.value)}
+                          onBlur={handleDevTimeInputBlur}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.target.blur();
+                            }
+                          }}
+                          className="w-full px-3 py-2 text-base font-mono font-bold text-slate-800 bg-amber-50/50 border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-center tracking-wider"
+                        />
+                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-amber-700 bg-amber-100/90 px-1.5 py-0.5 rounded border border-amber-300 pointer-events-none">
+                          24h
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[10px] text-slate-500 mt-1.5">
+                        <span className="italic">* Tự gõ 24h (vd: 14:30, 21:00)</span>
+                        <span className="font-mono font-bold text-amber-900 bg-amber-100/70 px-1.5 py-0.5 rounded border border-amber-200">
+                          {devMode.customTime || '00:00:00'}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Presets */}
@@ -278,6 +340,8 @@ export default function Navbar({ onOpenSchedule, devMode, setDevMode, activeBook
                             type="button"
                             onClick={() => {
                               const withSec = p.time.length === 5 ? `${p.time}:00` : p.time;
+                              setDevTimeInput(p.time);
+                              setIsEditingDevTime(false);
                               setDevMode(prev => ({
                                 ...prev,
                                 customTime: withSec,

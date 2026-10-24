@@ -51,32 +51,74 @@ export default function BookingModal({
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
   };
 
-  const handleStartTimeChange = (newStart) => {
-    let clampedStart = newStart;
+  // Chuẩn hóa chuỗi giờ khi người dùng gõ xong (onBlur)
+  const formatTimeOnBlur = (val, defaultVal = '08:00') => {
+    if (!val) return defaultVal;
+    let clean = val.trim().replace(/[^0-9:]/g, '');
+    if (!clean) return defaultVal;
+
+    // Tự động phân tích dạng gõ tắt: vd "8" -> "08:00", "14" -> "14:00", "1430" -> "14:30"
+    if (!clean.includes(':')) {
+      if (clean.length <= 2) {
+        clean = `${clean.padStart(2, '0')}:00`;
+      } else if (clean.length === 3) {
+        clean = `0${clean[0]}:${clean.slice(1)}`;
+      } else if (clean.length >= 4) {
+        clean = `${clean.slice(0, 2)}:${clean.slice(2, 4)}`;
+      }
+    } else {
+      const parts = clean.split(':');
+      const h = String(Math.min(23, Math.max(0, parseInt(parts[0] || '0', 10)))).padStart(2, '0');
+      const m = String(Math.min(59, Math.max(0, parseInt(parts[1] || '0', 10)))).padStart(2, '0');
+      clean = `${h}:${m}`;
+    }
+
+    return clean;
+  };
+
+  // Xử lý khi người dùng đang gõ (chỉ cho phép số và dấu :, tự chèn : sau 2 số)
+  const handleTimeInput = (val, field) => {
+    let filtered = val.replace(/[^0-9:]/g, '');
+    if (filtered.length > 5) filtered = filtered.slice(0, 5);
+
+    if (filtered.length === 2 && !filtered.includes(':') && !val.endsWith(':')) {
+      filtered = `${filtered}:`;
+    }
+
+    setModalState(prev => ({
+      ...prev,
+      [field]: filtered
+    }));
+  };
+
+  const handleStartTimeBlur = () => {
+    const formatted = formatTimeOnBlur(modalState.startTime, '08:00');
+    let clampedStart = formatted;
     if (clampedStart < '08:00') clampedStart = '08:00';
     if (clampedStart > '16:00') clampedStart = '16:00';
 
     const startMins = toMinutes(clampedStart);
-    const currentEndMins = toMinutes(modalState.endTime);
+    const currentEndMins = toMinutes(modalState.endTime || '10:00');
 
     let newEndMins = currentEndMins;
     if (currentEndMins - startMins < 60) {
       newEndMins = Math.min(17 * 60, startMins + 60);
     }
 
-    setModalState({
-      ...modalState,
+    setModalState(prev => ({
+      ...prev,
       startTime: clampedStart,
       endTime: toTimeStr(newEndMins)
-    });
+    }));
   };
 
-  const handleEndTimeChange = (newEnd) => {
-    let clampedEnd = newEnd;
+  const handleEndTimeBlur = () => {
+    const formatted = formatTimeOnBlur(modalState.endTime, '10:00');
+    let clampedEnd = formatted;
     if (clampedEnd > '17:00') clampedEnd = '17:00';
     if (clampedEnd < '09:00') clampedEnd = '09:00';
 
-    const startMins = toMinutes(modalState.startTime);
+    const startMins = toMinutes(modalState.startTime || '08:00');
     let endMins = toMinutes(clampedEnd);
 
     if (endMins - startMins < 60) {
@@ -84,10 +126,10 @@ export default function BookingModal({
       clampedEnd = toTimeStr(endMins);
     }
 
-    setModalState({
-      ...modalState,
+    setModalState(prev => ({
+      ...prev,
       endTime: clampedEnd
-    });
+    }));
   };
 
   return (
@@ -197,41 +239,53 @@ export default function BookingModal({
           </div>
         )}
 
-        {/* BỘ CHỌN KHUNG GIỜ (08:00 - 17:00, TỐI THIỂU 60 PHÚT) */}
+        {/* BỘ CHỌN KHUNG GIỜ 24H (TỰ ĐIỀN DẠNG 24H, 08:00 - 17:00, TỐI THIỂU 60 PHÚT) */}
         <div className="mb-5">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-sky-600" /> Giờ bắt đầu
+                <Clock className="w-3.5 h-3.5 text-sky-600" /> Giờ bắt đầu (24h)
               </label>
-              <input 
-                type="time" 
-                min="08:00"
-                max="16:00"
-                value={modalState.startTime}
-                onChange={(e) => handleStartTimeChange(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 transition shadow-inner bg-slate-50/50 focus:bg-white text-slate-800"
-              />
+              <div className="relative">
+                <input 
+                  type="text" 
+                  value={modalState.startTime || ''}
+                  onChange={(e) => handleTimeInput(e.target.value, 'startTime')}
+                  onBlur={handleStartTimeBlur}
+                  placeholder="08:00"
+                  maxLength={5}
+                  className="w-full pl-3.5 pr-8 py-2.5 text-sm font-bold font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 transition shadow-inner bg-slate-50/50 focus:bg-white text-slate-800"
+                />
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                  <Clock className="w-4 h-4 text-slate-400" />
+                </div>
+              </div>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-indigo-600" /> Giờ kết thúc
+                <Clock className="w-3.5 h-3.5 text-indigo-600" /> Giờ kết thúc (24h)
               </label>
-              <input 
-                type="time" 
-                min="09:00"
-                max="17:00"
-                value={modalState.endTime}
-                onChange={(e) => handleEndTimeChange(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 transition shadow-inner bg-slate-50/50 focus:bg-white text-slate-800"
-              />
+              <div className="relative">
+                <input 
+                  type="text" 
+                  value={modalState.endTime || ''}
+                  onChange={(e) => handleTimeInput(e.target.value, 'endTime')}
+                  onBlur={handleEndTimeBlur}
+                  placeholder="10:00"
+                  maxLength={5}
+                  className="w-full pl-3.5 pr-8 py-2.5 text-sm font-bold font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 transition shadow-inner bg-slate-50/50 focus:bg-white text-slate-800"
+                />
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                  <Clock className="w-4 h-4 text-slate-400" />
+                </div>
+              </div>
             </div>
           </div>
 
           <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-500">
             <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-            <span>Chỉ được chọn từ <strong>08:00</strong> đến <strong>17:00</strong> (Tối thiểu 60 phút).</span>
+            <span>Tự gõ giờ dạng 24h (VD: <strong>08:00</strong>, <strong>14:30</strong>, <strong>16:00</strong>).</span>
           </div>
         </div>
 

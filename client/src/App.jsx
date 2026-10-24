@@ -205,6 +205,20 @@ export default function App() {
     loadData();
   }, []);
 
+  // Định kỳ tự động đồng bộ realtime trạng thái đơn phòng và phòng chạy mỗi 5 giây
+  useEffect(() => {
+    const pollTimer = setInterval(() => {
+      api.getMarqueeRooms().then(setMarqueeRooms).catch(() => {});
+      if (currentUser?.studentId) {
+        api.checkStudent(currentUser.studentId).then(data => {
+          setStudentStatus(data);
+        }).catch(() => {});
+      }
+    }, 5000);
+
+    return () => clearInterval(pollTimer);
+  }, [currentUser]);
+
   // Tra cứu MSSV: Tự động kiểm tra trạng thái đăng nhập
   const handleStudentAction = async () => {
     if (!currentUser) {
@@ -302,7 +316,7 @@ export default function App() {
     }
 
     try {
-      await api.createBooking({
+      const res = await api.createBooking({
         studentId: sId,
         studentEmail: sEmail,
         roomId: bookingModal.room.id,
@@ -315,8 +329,31 @@ export default function App() {
       showToast(`Đặt thành công phòng ${bookingModal.room.id}!`, 'success');
       setBookingModal(prev => ({ ...prev, isOpen: false }));
       
-      handleStudentAction();
-      loadData();
+      // 1. Cập nhật ngay lập tức đơn phòng vào state để hiển thị banner Realtime trên HomePage
+      if (res?.booking) {
+        setStudentStatus(prev => ({
+          ...(prev || {}),
+          hasActiveBooking: true,
+          booking: res.booking
+        }));
+      }
+
+      // 2. Tải lại toàn bộ dữ liệu (cả ma trận lịch theo ngày đặt, phòng chạy, phòng trống và thông tin sinh viên)
+      const targetDate = date || todayStr;
+      const [marquee, matrix, available, studentInfo] = await Promise.all([
+        api.getMarqueeRooms(),
+        api.getScheduleMatrix(targetDate),
+        api.getAvailableRooms(memberCount),
+        api.checkStudent(sId)
+      ]);
+
+      setMarqueeRooms(marquee);
+      setScheduleMatrix(matrix);
+      setAvailableRooms(available);
+      if (studentInfo) {
+        setStudentStatus(studentInfo);
+      }
+
       navigate('/homepage');
     } catch (err) {
       showToast(err.message || 'Lỗi khi đặt phòng!', 'error');

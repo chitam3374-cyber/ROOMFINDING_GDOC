@@ -14,6 +14,15 @@ const toTimeStr = (totalMinutes) => {
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 };
 
+// Lấy số phút hiện tại (theo giờ giả lập nếu hợp lệ, hoặc theo giờ thực máy chủ)
+const getEffectiveMins = (simulatedTime) => {
+  if (simulatedTime && simulatedTime !== 'REAL_TIME') {
+    return toMinutes(simulatedTime);
+  }
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+};
+
 // Hàm chuẩn hóa MSSV: Cắt khoảng trắng thừa và viết in hoa toàn bộ
 const normalizeStudentId = (id) => {
   if (!id) return '';
@@ -34,7 +43,7 @@ export const RoomService = {
     }
 
     const now = new Date();
-    if (simulatedTime) {
+    if (simulatedTime && simulatedTime !== 'REAL_TIME') {
       const [sh, sm] = simulatedTime.split(':').map(Number);
       now.setHours(sh, sm, 0, 0);
     }
@@ -164,7 +173,7 @@ export const RoomService = {
     if (!penaltyCheck.canBook) throw new Error(penaltyCheck.reason);
 
     // 2. Kiểm tra xem sinh viên đã có phòng đang hoạt động chưa
-    const existing = this.getStudentActiveBooking(sId);
+    const existing = this.getStudentActiveBooking(sId, simulatedTime);
     if (existing) throw new Error('Sinh viên này hiện đã có phòng đang hoạt động!');
 
     if (startTime < '08:00') {
@@ -187,7 +196,7 @@ export const RoomService = {
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
     const defaultTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
-    const currentTimeStr = simulatedTime || defaultTimeStr;
+    const currentTimeStr = (simulatedTime && simulatedTime !== 'REAL_TIME') ? simulatedTime.slice(0, 5) : defaultTimeStr;
 
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -272,7 +281,7 @@ export const RoomService = {
     }
 
     const now = new Date();
-    if (simulatedTime) {
+    if (simulatedTime && simulatedTime !== 'REAL_TIME') {
       const [sh, sm] = simulatedTime.split(':').map(Number);
       now.setHours(sh, sm, 0, 0);
     }
@@ -383,7 +392,7 @@ export const RoomService = {
       throw new Error(`Đơn đặt phòng này thuộc ngày ${b.date} đã quá hạn nhận phòng!`);
     }
 
-    const currentMins = simulatedTime ? toMinutes(simulatedTime) : (now.getHours() * 60 + now.getMinutes());
+    const currentMins = getEffectiveMins(simulatedTime);
     const [startH, startM] = b.startTime.split(':').map(Number);
     const startMins = startH * 60 + startM;
 
@@ -421,7 +430,7 @@ export const RoomService = {
       throw new Error(`Chưa đến ngày trả phòng! Lịch hẹn của bạn là ngày ${b.date}.`);
     }
 
-    const currentMins = simulatedTime ? toMinutes(simulatedTime) : (now.getHours() * 60 + now.getMinutes());
+    const currentMins = getEffectiveMins(simulatedTime);
     const [endH, endM] = b.endTime.split(':').map(Number);
     const endMins = endH * 60 + endM;
 
@@ -450,7 +459,7 @@ export const RoomService = {
     const day = String(now.getDate()).padStart(2, '0');
     const todayStr = `${year}-${month}-${day}`;
 
-    const currentMins = simulatedTime ? toMinutes(simulatedTime) : (now.getHours() * 60 + now.getMinutes());
+    const currentMins = getEffectiveMins(simulatedTime);
 
     const activeBookings = db.prepare("SELECT * FROM bookings WHERE status IN ('BOOKED', 'CHECKED_IN')").all();
     if (!activeBookings || activeBookings.length === 0) return 0;
@@ -506,7 +515,8 @@ export const RoomService = {
     let isBannedPermanent = p.isBannedPermanent;
 
     if (newNoShow === 1) {
-      desc = `[Lần 1] Cảnh cáo: Không bấm nhận phòng ${b.roomId} sau 10 phút.`;
+      banUntil = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      desc = `[Lần 1] Khóa 7 ngày: Không bấm nhận phòng ${b.roomId} sau 10 phút.`;
     } else if (newNoShow === 2) {
       banUntil = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
       desc = `[Lần 2] Khóa tài khoản 30 ngày: Không nhận phòng ${b.roomId} sau 10 phút.`;

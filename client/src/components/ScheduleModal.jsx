@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Calendar, X, Search, Clock, CalendarDays, CheckCircle2 } from 'lucide-react';
 
 export default function ScheduleModal({ isOpen, onClose, scheduleMatrix, onDateChange }) {
@@ -47,6 +47,17 @@ export default function ScheduleModal({ isOpen, onClose, scheduleMatrix, onDateC
       onDateChange(newDate);
     }
   };
+
+  // Tự động đồng bộ lịch phòng realtime ngay khi mở modal và định kỳ mỗi 3s
+  useEffect(() => {
+    if (isOpen && onDateChange && selectedDate) {
+      onDateChange(selectedDate);
+      const pollTimer = setInterval(() => {
+        onDateChange(selectedDate);
+      }, 3000);
+      return () => clearInterval(pollTimer);
+    }
+  }, [isOpen, selectedDate]);
 
   if (!isOpen) return null;
 

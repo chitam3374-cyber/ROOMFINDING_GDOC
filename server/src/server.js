@@ -16,11 +16,32 @@ syncJsonFromSqlite();
 app.use(cors());
 app.use(express.json());
 
+// Quản lý thời gian giả lập DevMode trên server để các tiến trình quét ngầm không chạy sai giờ
+let activeSimulatedTime = null;
+let lastSimulatedTimeUpdated = 0;
+
 // Middleware tự động quét và giải phóng các phòng quá hạn nhận phòng/trả phòng trước mỗi request API
 app.use((req, res, next) => {
   try {
-    const simTime = req.headers['x-simulated-time'] || req.query?.simulatedTime || req.body?.simulatedTime;
-    RoomService.autoExpireOverdueBookings(simTime);
+    const rawSim = req.headers['x-simulated-time'] || req.query?.simulatedTime || req.body?.simulatedTime;
+    if (rawSim === 'REAL_TIME') {
+      activeSimulatedTime = null;
+      lastSimulatedTimeUpdated = 0;
+    } else if (rawSim) {
+      activeSimulatedTime = rawSim;
+      lastSimulatedTimeUpdated = Date.now();
+    } else {
+      if (Date.now() - lastSimulatedTimeUpdated > 120000) {
+        activeSimulatedTime = null;
+      }
+    }
+
+    const effectiveTime = (rawSim && rawSim !== 'REAL_TIME')
+      ? rawSim
+      : ((Date.now() - lastSimulatedTimeUpdated < 120000) ? activeSimulatedTime : null);
+
+    req.effectiveSimulatedTime = effectiveTime;
+    RoomService.autoExpireOverdueBookings(effectiveTime);
   } catch (err) {
     console.error('Lỗi khi autoExpireOverdueBookings:', err.message);
   }
@@ -30,7 +51,8 @@ app.use((req, res, next) => {
 // Chạy tác vụ quét định kỳ mỗi 15 giây ngầm trong backend
 setInterval(() => {
   try {
-    RoomService.autoExpireOverdueBookings();
+    const effectiveTime = (Date.now() - lastSimulatedTimeUpdated < 120000) ? activeSimulatedTime : null;
+    RoomService.autoExpireOverdueBookings(effectiveTime);
   } catch (err) {
     console.error('Lỗi interval autoExpireOverdueBookings:', err.message);
   }
@@ -67,7 +89,7 @@ app.get('/api/auth/users', (req, res) => {
 
 // 1. Danh sách phòng trống cho thanh Marquee
 app.get('/api/rooms/marquee', (req, res) => {
-  res.json(RoomService.getMarqueeAvailableRooms());
+  res.json(RoomService.getMarqueeAvailableRooms(req.effectiveSimulatedTime));
 });
 
 // 2. Bảng ma trận lịch phòng theo ngày cụ thể (4 slot cố định)
@@ -79,32 +101,30 @@ app.get('/api/rooms/schedule-matrix', (req, res) => {
   const todayStr = `${year}-${month}-${day}`;
 
   const targetDate = req.query.date || todayStr;
-  res.json(RoomService.getScheduleMatrix(targetDate));
+  res.json(RoomService.getScheduleMatrix(targetDate, req.effectiveSimulatedTime));
 });
 
 // 3. Tra cứu trạng thái và chế tài của sinh viên
 app.get('/api/students/:id/check', (req, res) => {
   const sId = req.params.id;
-  const simulatedTime = req.headers['x-simulated-time'] || req.query?.simulatedTime;
-  const activeBooking = RoomService.getStudentActiveBooking(sId);
+  const activeBooking = RoomService.getStudentActiveBooking(sId, req.effectiveSimulatedTime);
   res.json({
     hasActiveBooking: !!activeBooking,
     booking: activeBooking || null,
-    penalties: RoomService.getStudentPenaltyStatus(sId, simulatedTime)
+    penalties: RoomService.getStudentPenaltyStatus(sId, req.effectiveSimulatedTime)
   });
 });
 
 // 4. Lấy danh sách phòng khả dụng theo quy mô nhóm
 app.get('/api/rooms/available', (req, res) => {
   const { date, startTime, endTime, memberCount } = req.query;
-  res.json(RoomService.getAvailableRoomsForGroup(date, startTime, endTime, memberCount));
+  res.json(RoomService.getAvailableRoomsForGroup(date, startTime, endTime, memberCount, req.effectiveSimulatedTime));
 });
 
 // 5. Tạo đơn đặt phòng
 app.post('/api/bookings', (req, res) => {
   try {
-    const simulatedTime = req.headers['x-simulated-time'] || req.body?.simulatedTime;
-    const booking = RoomService.createBooking({ ...req.body, simulatedTime });
+    const booking = RoomService.createBooking({ ...req.body, simulatedTime: req.effectiveSimulatedTime });
     res.status(201).json({ success: true, booking });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
@@ -115,8 +135,7 @@ app.post('/api/bookings', (req, res) => {
 app.post('/api/bookings/:id/cancel', (req, res) => {
   try {
     const { studentId } = req.body;
-    const simulatedTime = req.headers['x-simulated-time'] || req.body?.simulatedTime;
-    const result = RoomService.cancelBooking(req.params.id, studentId, simulatedTime);
+    const result = RoomService.cancelBooking(req.params.id, studentId, req.effectiveSimulatedTime);
     res.json(result);
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
@@ -126,8 +145,7 @@ app.post('/api/bookings/:id/cancel', (req, res) => {
 // 7. Xác nhận đã nhận phòng (Check-in)
 app.post('/api/bookings/:id/checkin', (req, res) => {
   try {
-    const simulatedTime = req.headers['x-simulated-time'] || req.body?.simulatedTime;
-    res.json({ success: true, booking: RoomService.confirmCheckIn(req.params.id, simulatedTime) });
+    res.json({ success: true, booking: RoomService.confirmCheckIn(req.params.id, req.effectiveSimulatedTime) });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }
@@ -136,8 +154,7 @@ app.post('/api/bookings/:id/checkin', (req, res) => {
 // 8. Xác nhận trả phòng (Check-out)
 app.post('/api/bookings/:id/checkout', (req, res) => {
   try {
-    const simulatedTime = req.headers['x-simulated-time'] || req.body?.simulatedTime;
-    res.json({ success: true, booking: RoomService.confirmCheckOut(req.params.id, simulatedTime) });
+    res.json({ success: true, booking: RoomService.confirmCheckOut(req.params.id, req.effectiveSimulatedTime) });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }
@@ -195,8 +212,7 @@ app.get('/api/admin/schedule-matrix', (req, res) => {
     const todayStr = `${year}-${month}-${day}`;
 
     const targetDate = req.query.date || todayStr;
-    const simulatedTime = req.headers['x-simulated-time'] || req.query?.simulatedTime;
-    res.json(RoomService.getScheduleMatrixWithDetails(targetDate, simulatedTime));
+    res.json(RoomService.getScheduleMatrixWithDetails(targetDate, req.effectiveSimulatedTime));
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }

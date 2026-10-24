@@ -308,7 +308,7 @@ export default function AuthModal({ isOpen, onClose, initialTab = 'login', onSuc
                 disabled={loading}
                 className="w-full mt-2 py-3 bg-gradient-to-r from-sky-600 to-indigo-900 hover:from-sky-500 hover:to-indigo-950 text-white font-bold rounded-2xl transition shadow-lg shadow-sky-900/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                {loading ? 'Đang xác thực...' : 'ĐĂNG NHẬP NGAY'}
+                {loading ? 'Đang xác thực...' : 'ĐĂNG NHẬP'}
               </button>
 
               <div className="text-center pt-2">

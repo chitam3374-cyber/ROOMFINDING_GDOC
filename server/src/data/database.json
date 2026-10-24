@@ -26,6 +26,15 @@
       "password": "111111",
       "role": "student",
       "createdAt": "2026-10-23T05:20:28.299Z"
+    },
+    {
+      "id": "USR_1792846239188_y5p4c",
+      "studentId": "ITITIT00000",
+      "email": "ititit00000@student.hcmiu.edu.vn",
+      "fullName": "tesst2",
+      "password": "1111111",
+      "role": "student",
+      "createdAt": "2026-10-24T12:50:39.188Z"
     }
   ],
   "rooms": [
@@ -1008,6 +1017,114 @@
   ],
   "bookings": [
     {
+      "id": "BKUQA5",
+      "studentId": "ITITIU25055",
+      "studentEmail": "ititiu25055@student.hcmiu.edu.vn",
+      "roomId": "A1.102",
+      "date": "2026-10-24",
+      "startTime": "13:00",
+      "endTime": "14:00",
+      "memberCount": 1,
+      "status": "COMPLETED",
+      "createdAt": "2026-10-24T14:02:28.787Z"
+    },
+    {
+      "id": "BKFVUC",
+      "studentId": "ITITIU25055",
+      "studentEmail": "ititiu25055@student.hcmiu.edu.vn",
+      "roomId": "A1.103",
+      "date": "2026-10-24",
+      "startTime": "13:00",
+      "endTime": "14:00",
+      "memberCount": 1,
+      "status": "CANCELLED",
+      "createdAt": "2026-10-24T14:01:43.218Z"
+    },
+    {
+      "id": "BKC4JD",
+      "studentId": "ITITIU25055",
+      "studentEmail": "ititiu25055@student.hcmiu.edu.vn",
+      "roomId": "A1.202",
+      "date": "2026-10-24",
+      "startTime": "13:00",
+      "endTime": "14:00",
+      "memberCount": 1,
+      "status": "CANCELLED",
+      "createdAt": "2026-10-24T13:56:13.095Z"
+    },
+    {
+      "id": "BK4B89",
+      "studentId": "ITITIU25055",
+      "studentEmail": "ititiu25055@student.hcmiu.edu.vn",
+      "roomId": "A1.102",
+      "date": "2026-10-24",
+      "startTime": "13:00",
+      "endTime": "14:00",
+      "memberCount": 1,
+      "status": "CANCELLED",
+      "createdAt": "2026-10-24T13:54:19.620Z"
+    },
+    {
+      "id": "BKM4DI",
+      "studentId": "ITITWE25002",
+      "studentEmail": "ititwe25002@student.hcmiu.edu.vn",
+      "roomId": "A1.501",
+      "date": "2026-10-24",
+      "startTime": "13:00",
+      "endTime": "14:00",
+      "memberCount": 1,
+      "status": "CANCELLED",
+      "createdAt": "2026-10-24T13:32:54.080Z"
+    },
+    {
+      "id": "BKON56",
+      "studentId": "ITITWE25002",
+      "studentEmail": "ititwe25002@student.hcmiu.edu.vn",
+      "roomId": "A1.103",
+      "date": "2026-10-25",
+      "startTime": "12:30",
+      "endTime": "13:30",
+      "memberCount": 1,
+      "status": "CANCELLED",
+      "createdAt": "2026-10-24T13:22:43.049Z"
+    },
+    {
+      "id": "BK47F8",
+      "studentId": "ITITIT00000",
+      "studentEmail": "ititit00000@student.hcmiu.edu.vn",
+      "roomId": "A1.204",
+      "date": "2026-10-25",
+      "startTime": "16:00",
+      "endTime": "17:00",
+      "memberCount": 1,
+      "status": "BOOKED",
+      "createdAt": "2026-10-24T12:51:44.257Z"
+    },
+    {
+      "id": "BKWY9A",
+      "studentId": "ITITIU25055",
+      "studentEmail": "ititiu25055@student.hcmiu.edu.vn",
+      "roomId": "A1.101",
+      "date": "2026-10-25",
+      "startTime": "08:00",
+      "endTime": "09:00",
+      "memberCount": 23,
+      "status": "CANCELLED",
+      "createdAt": "2026-10-24T12:48:18.100Z"
+    },
+    {
+      "id": "BK9EXU",
+      "studentId": "ITITIU25055",
+      "studentEmail": "ititiu25055@student.hcmiu.edu.vn",
+      "roomId": "A1.201",
+      "date": "2026-10-25",
+      "startTime": "08:00",
+      "endTime": "09:00",
+      "memberCount": 12,
+      "status": "CANCELLED",
+      "createdAt": "2026-10-24T12:43:19.054Z"
+    },
+    {
       "id": "BKOL2D",
       "studentId": "ITITIU25055",
       "studentEmail": "ititiu25055@student.hcmiu.edu.vn",
@@ -1108,7 +1225,7 @@
     "ITITIU25055": {
       "studentId": "ITITIU25055",
       "noShowCount": 1,
-      "lateCheckoutCount": 0,
+      "lateCheckoutCount": 1,
       "banUntil": null,
       "isBannedPermanent": 0
     },
@@ -1121,42 +1238,67 @@
     },
     "ITITWE25002": {
       "studentId": "ITITWE25002",
-      "noShowCount": 2,
+      "noShowCount": 3,
       "lateCheckoutCount": 0,
-      "banUntil": "2026-11-22T05:59:28.159Z",
+      "banUntil": null,
+      "isBannedPermanent": 0
+    },
+    "ITITIT00000": {
+      "studentId": "ITITIT00000",
+      "noShowCount": 0,
+      "lateCheckoutCount": 0,
+      "banUntil": null,
       "isBannedPermanent": 0
     }
   },
   "penalty_logs": [
     {
-      "id": 33,
+      "id": 50,
       "studentId": "ITITIU25055",
-      "date": "13:04:17 23/10/2026",
-      "reason": "[Lần 1] Cảnh cáo: Không bấm nhận phòng A1.301 sau 10 phút."
+      "date": "21:02:44 24/10/2026",
+      "reason": "[Lần 1] Cảnh cáo: Không bấm trả phòng A1.102 đúng hạn."
     },
     {
-      "id": 32,
+      "id": 49,
       "studentId": "ITITIU25055",
-      "date": "13:02:37 23/10/2026",
-      "reason": "Hủy đặt phòng B.204 (Lần 2/3 trong ngày)"
+      "date": "21:02:11 24/10/2026",
+      "reason": "[Admin Devpage] Đã mở khóa/gỡ ban tài khoản."
+    },
+    {
+      "id": 48,
+      "studentId": "ITITIU25055",
+      "date": "21:01:54 24/10/2026",
+      "reason": "[Lần 1] Khóa 7 ngày: Không bấm nhận phòng A1.103 sau 10 phút."
+    },
+    {
+      "id": 40,
+      "studentId": "ITITWE25002",
+      "date": "20:35:00 24/10/2026",
+      "reason": "[Admin Devpage] Đã mở khóa/gỡ ban tài khoản."
+    },
+    {
+      "id": 37,
+      "studentId": "ITITWE25002",
+      "date": "20:32:54 24/10/2026",
+      "reason": "[Lần 3] CẤM VĨNH VIỄN: Vi phạm không nhận phòng quá 3 lần."
+    },
+    {
+      "id": 36,
+      "studentId": "ITITWE25002",
+      "date": "12:00:00 24/10/2026",
+      "reason": "Hủy đặt phòng tương lai A1.103 (Lần 1/3 trong ngày)"
+    },
+    {
+      "id": 34,
+      "studentId": "ITITWE25002",
+      "date": "15:47:23 24/10/2026",
+      "reason": "[Admin Devpage] Đã mở khóa/gỡ ban tài khoản."
     },
     {
       "id": 30,
       "studentId": "ITITWE25002",
       "date": "12:44:28 23/10/2026",
       "reason": "[Lần 1] Cảnh cáo: Không bấm nhận phòng A1.201 sau 10 phút."
-    },
-    {
-      "id": 29,
-      "studentId": "ITITIU25055",
-      "date": "12:19:21 23/10/2026",
-      "reason": "[Admin Devpage] Đã mở khóa/gỡ ban tài khoản."
-    },
-    {
-      "id": 28,
-      "studentId": "ITITIU25055",
-      "date": "09:00:00 23/10/2026",
-      "reason": "Hủy đặt phòng tương lai A1.103 (Lần 1/3 trong ngày)"
     }
   ],
   "room_locks": []

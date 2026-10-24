@@ -158,6 +158,37 @@ export default function DevPage({ currentUser, simulatedTime }) {
     reason: 'Bảo trì trang thiết bị'
   });
 
+  // Hỗ trợ nhập giờ 24h tự do không bị AM/PM
+  const handleLockTimeInput = (val, field) => {
+    let filtered = val.replace(/[^0-9:]/g, '');
+    if (filtered.length > 5) filtered = filtered.slice(0, 5);
+    if (filtered.length === 2 && !filtered.includes(':') && !val.endsWith(':')) {
+      filtered = `${filtered}:`;
+    }
+    setNewLock(prev => ({ ...prev, [field]: filtered }));
+  };
+
+  const handleLockTimeBlur = (field, defaultVal) => {
+    let clean = (newLock[field] || '').trim();
+    if (!clean) {
+      clean = defaultVal;
+    } else if (!clean.includes(':')) {
+      if (clean.length <= 2) {
+        clean = `${clean.padStart(2, '0')}:00`;
+      } else if (clean.length === 3) {
+        clean = `0${clean[0]}:${clean.slice(1)}`;
+      } else if (clean.length >= 4) {
+        clean = `${clean.slice(0, 2)}:${clean.slice(2, 4)}`;
+      }
+    } else {
+      const parts = clean.split(':');
+      let h = Math.min(23, Math.max(0, parseInt(parts[0] || '0', 10)));
+      let m = Math.min(59, Math.max(0, parseInt(parts[1] || '0', 10)));
+      clean = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+    setNewLock(prev => ({ ...prev, [field]: clean }));
+  };
+
   const loadLocks = async () => {
     try {
       setLoading(true);
@@ -902,21 +933,33 @@ export default function DevPage({ currentUser, simulatedTime }) {
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block font-bold text-amber-900 mb-1">Giờ bắt đầu:</label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block font-bold text-amber-900 text-xs">Giờ bắt đầu:</label>
+                        <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-1 py-0.2 rounded">24h</span>
+                      </div>
                       <input
-                        type="time"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="08:00"
                         value={newLock.startTime}
-                        onChange={(e) => setNewLock(prev => ({ ...prev, startTime: e.target.value }))}
-                        className="w-full px-2 py-1.5 bg-white border border-amber-300 rounded-xl font-bold text-center"
+                        onChange={(e) => handleLockTimeInput(e.target.value, 'startTime')}
+                        onBlur={() => handleLockTimeBlur('startTime', '08:00')}
+                        className="w-full px-2 py-1.5 bg-white border border-amber-300 rounded-xl font-bold font-mono text-center text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-amber-900 mb-1">Giờ kết thúc:</label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block font-bold text-amber-900 text-xs">Giờ kết thúc:</label>
+                        <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-1 py-0.2 rounded">24h</span>
+                      </div>
                       <input
-                        type="time"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="12:00"
                         value={newLock.endTime}
-                        onChange={(e) => setNewLock(prev => ({ ...prev, endTime: e.target.value }))}
-                        className="w-full px-2 py-1.5 bg-white border border-amber-300 rounded-xl font-bold text-center"
+                        onChange={(e) => handleLockTimeInput(e.target.value, 'endTime')}
+                        onBlur={() => handleLockTimeBlur('endTime', '12:00')}
+                        className="w-full px-2 py-1.5 bg-white border border-amber-300 rounded-xl font-bold font-mono text-center text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                       />
                     </div>
                   </div>
