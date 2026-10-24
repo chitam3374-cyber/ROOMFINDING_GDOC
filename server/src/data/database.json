@@ -1,1163 +1,1028 @@
 {
   "users": [
     {
-      "id": "USR_1792729101448_99rdv",
-      "studentId": "ITITIU25055",
-      "email": "ititiu25055@student.hcmiu.edu.vn",
-      "fullName": "Phạm Văn Đại",
-      "password": "123456",
-      "role": "admin",
-      "createdAt": "2026-10-23T04:18:21.448Z"
-    },
-    {
       "id": "USR_ADMIN_001",
       "studentId": "ADMIN001",
       "email": "admin@student.hcmiu.edu.vn",
       "fullName": "Quản Trị Viên (Admin)",
       "password": "123456",
       "role": "admin",
-      "createdAt": "2026-10-23T05:08:32.328Z"
-    },
-    {
-      "id": "USR_1792732828299_ofla6",
-      "studentId": "ITITWE25002",
-      "email": "ititwe25002@student.hcmiu.edu.vn",
-      "fullName": "Test",
-      "password": "111111",
-      "role": "student",
-      "createdAt": "2026-10-23T05:20:28.299Z"
+      "createdAt": "2026-10-24T04:23:57.977Z"
     }
   ],
   "rooms": [
     {
       "id": "A1.101",
-      "name": "Giảng đường A1.101",
+      "name": "Giảng đường lớn A1.101",
       "building": "A1",
       "floor": 1,
       "capacity": 120,
-      "category": "Giảng đường"
+      "category": "Giảng đường lớn"
     },
     {
       "id": "A1.102",
-      "name": "Phòng Lab A1.102",
+      "name": "Phòng thảo luận A1.102",
       "building": "A1",
       "floor": 1,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "A1.103",
-      "name": "Phòng học A1.103",
+      "name": "Phòng tự học A1.103",
       "building": "A1",
       "floor": 1,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "A1.104",
-      "name": "Phòng học A1.104",
+      "name": "Phòng thực hành / Nhóm A1.104",
       "building": "A1",
       "floor": 1,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A1.105",
-      "name": "Phòng học A1.105",
+      "name": "Phòng thực hành / Nhóm A1.105",
       "building": "A1",
       "floor": 1,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A1.201",
-      "name": "Giảng đường A1.201",
+      "name": "Giảng đường lớn A1.201",
       "building": "A1",
       "floor": 2,
-      "capacity": 140,
-      "category": "Giảng đường"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "A1.202",
-      "name": "Phòng Lab A1.202",
+      "name": "Phòng thảo luận A1.202",
       "building": "A1",
       "floor": 2,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "A1.203",
-      "name": "Phòng học A1.203",
+      "name": "Phòng tự học A1.203",
       "building": "A1",
       "floor": 2,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "A1.204",
-      "name": "Phòng học A1.204",
+      "name": "Phòng thực hành / Nhóm A1.204",
       "building": "A1",
       "floor": 2,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A1.205",
-      "name": "Phòng học A1.205",
+      "name": "Phòng thực hành / Nhóm A1.205",
       "building": "A1",
       "floor": 2,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A1.301",
-      "name": "Giảng đường A1.301",
+      "name": "Giảng đường lớn A1.301",
       "building": "A1",
       "floor": 3,
-      "capacity": 150,
-      "category": "Giảng đường"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "A1.302",
-      "name": "Phòng Lab A1.302",
+      "name": "Phòng thảo luận A1.302",
       "building": "A1",
       "floor": 3,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "A1.303",
-      "name": "Phòng học A1.303",
+      "name": "Phòng tự học A1.303",
       "building": "A1",
       "floor": 3,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "A1.304",
-      "name": "Phòng học A1.304",
+      "name": "Phòng thực hành / Nhóm A1.304",
       "building": "A1",
       "floor": 3,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A1.305",
-      "name": "Phòng học A1.305",
+      "name": "Phòng thực hành / Nhóm A1.305",
       "building": "A1",
       "floor": 3,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A1.401",
-      "name": "Giảng đường A1.401",
+      "name": "Giảng đường lớn A1.401",
       "building": "A1",
       "floor": 4,
-      "capacity": 80,
-      "category": "Giảng đường"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "A1.402",
-      "name": "Phòng Lab A1.402",
+      "name": "Phòng thảo luận A1.402",
       "building": "A1",
       "floor": 4,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "A1.403",
-      "name": "Phòng học A1.403",
+      "name": "Phòng tự học A1.403",
       "building": "A1",
       "floor": 4,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "A1.404",
-      "name": "Phòng học A1.404",
+      "name": "Phòng thực hành / Nhóm A1.404",
       "building": "A1",
       "floor": 4,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A1.405",
-      "name": "Phòng học A1.405",
+      "name": "Phòng thực hành / Nhóm A1.405",
       "building": "A1",
       "floor": 4,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A1.501",
-      "name": "Giảng đường A1.501",
+      "name": "Giảng đường lớn A1.501",
       "building": "A1",
       "floor": 5,
-      "capacity": 100,
-      "category": "Giảng đường"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "A1.502",
-      "name": "Phòng Lab A1.502",
+      "name": "Phòng thảo luận A1.502",
       "building": "A1",
       "floor": 5,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "A1.503",
-      "name": "Phòng học A1.503",
+      "name": "Phòng tự học A1.503",
       "building": "A1",
       "floor": 5,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "A1.504",
-      "name": "Phòng học A1.504",
+      "name": "Phòng thực hành / Nhóm A1.504",
       "building": "A1",
       "floor": 5,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A1.505",
-      "name": "Phòng học A1.505",
+      "name": "Phòng thực hành / Nhóm A1.505",
       "building": "A1",
       "floor": 5,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A1.601",
-      "name": "Giảng đường A1.601",
+      "name": "Giảng đường lớn A1.601",
       "building": "A1",
       "floor": 6,
       "capacity": 120,
-      "category": "Giảng đường"
+      "category": "Giảng đường lớn"
     },
     {
       "id": "A1.602",
-      "name": "Phòng Lab A1.602",
+      "name": "Phòng thảo luận A1.602",
       "building": "A1",
       "floor": 6,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "A1.603",
-      "name": "Phòng học A1.603",
+      "name": "Phòng tự học A1.603",
       "building": "A1",
       "floor": 6,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "A1.604",
-      "name": "Phòng học A1.604",
+      "name": "Phòng thực hành / Nhóm A1.604",
       "building": "A1",
       "floor": 6,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A1.605",
-      "name": "Phòng học A1.605",
+      "name": "Phòng thực hành / Nhóm A1.605",
       "building": "A1",
       "floor": 6,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A1.701",
-      "name": "Giảng đường A1.701",
+      "name": "Giảng đường lớn A1.701",
       "building": "A1",
       "floor": 7,
-      "capacity": 140,
-      "category": "Giảng đường"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "A1.702",
-      "name": "Phòng Lab A1.702",
+      "name": "Phòng thảo luận A1.702",
       "building": "A1",
       "floor": 7,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "A1.703",
-      "name": "Phòng học A1.703",
+      "name": "Phòng tự học A1.703",
       "building": "A1",
       "floor": 7,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "A1.704",
-      "name": "Phòng học A1.704",
+      "name": "Phòng thực hành / Nhóm A1.704",
       "building": "A1",
       "floor": 7,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A1.705",
-      "name": "Phòng học A1.705",
+      "name": "Phòng thực hành / Nhóm A1.705",
       "building": "A1",
       "floor": 7,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A2.101",
-      "name": "Giảng đường A2.101",
+      "name": "Giảng đường lớn A2.101",
       "building": "A2",
       "floor": 1,
       "capacity": 120,
-      "category": "Giảng đường"
+      "category": "Giảng đường lớn"
     },
     {
       "id": "A2.102",
-      "name": "Phòng Lab A2.102",
+      "name": "Phòng thảo luận A2.102",
       "building": "A2",
       "floor": 1,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "A2.103",
-      "name": "Phòng học A2.103",
+      "name": "Phòng tự học A2.103",
       "building": "A2",
       "floor": 1,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "A2.104",
-      "name": "Phòng học A2.104",
+      "name": "Phòng thực hành / Nhóm A2.104",
       "building": "A2",
       "floor": 1,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A2.105",
-      "name": "Phòng học A2.105",
+      "name": "Phòng thực hành / Nhóm A2.105",
       "building": "A2",
       "floor": 1,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A2.201",
-      "name": "Giảng đường A2.201",
+      "name": "Giảng đường lớn A2.201",
       "building": "A2",
       "floor": 2,
-      "capacity": 140,
-      "category": "Giảng đường"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "A2.202",
-      "name": "Phòng Lab A2.202",
+      "name": "Phòng thảo luận A2.202",
       "building": "A2",
       "floor": 2,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "A2.203",
-      "name": "Phòng học A2.203",
+      "name": "Phòng tự học A2.203",
       "building": "A2",
       "floor": 2,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "A2.204",
-      "name": "Phòng học A2.204",
+      "name": "Phòng thực hành / Nhóm A2.204",
       "building": "A2",
       "floor": 2,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A2.205",
-      "name": "Phòng học A2.205",
+      "name": "Phòng thực hành / Nhóm A2.205",
       "building": "A2",
       "floor": 2,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A2.301",
-      "name": "Giảng đường A2.301",
+      "name": "Giảng đường lớn A2.301",
       "building": "A2",
       "floor": 3,
-      "capacity": 150,
-      "category": "Giảng đường"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "A2.302",
-      "name": "Phòng Lab A2.302",
+      "name": "Phòng thảo luận A2.302",
       "building": "A2",
       "floor": 3,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "A2.303",
-      "name": "Phòng học A2.303",
+      "name": "Phòng tự học A2.303",
       "building": "A2",
       "floor": 3,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "A2.304",
-      "name": "Phòng học A2.304",
+      "name": "Phòng thực hành / Nhóm A2.304",
       "building": "A2",
       "floor": 3,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A2.305",
-      "name": "Phòng học A2.305",
+      "name": "Phòng thực hành / Nhóm A2.305",
       "building": "A2",
       "floor": 3,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A2.401",
-      "name": "Giảng đường A2.401",
+      "name": "Giảng đường lớn A2.401",
       "building": "A2",
       "floor": 4,
-      "capacity": 80,
-      "category": "Giảng đường"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "A2.402",
-      "name": "Phòng Lab A2.402",
+      "name": "Phòng thảo luận A2.402",
       "building": "A2",
       "floor": 4,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "A2.403",
-      "name": "Phòng học A2.403",
+      "name": "Phòng tự học A2.403",
       "building": "A2",
       "floor": 4,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "A2.404",
-      "name": "Phòng học A2.404",
+      "name": "Phòng thực hành / Nhóm A2.404",
       "building": "A2",
       "floor": 4,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A2.405",
-      "name": "Phòng học A2.405",
+      "name": "Phòng thực hành / Nhóm A2.405",
       "building": "A2",
       "floor": 4,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A2.501",
-      "name": "Giảng đường A2.501",
+      "name": "Giảng đường lớn A2.501",
       "building": "A2",
       "floor": 5,
-      "capacity": 100,
-      "category": "Giảng đường"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "A2.502",
-      "name": "Phòng Lab A2.502",
+      "name": "Phòng thảo luận A2.502",
       "building": "A2",
       "floor": 5,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "A2.503",
-      "name": "Phòng học A2.503",
+      "name": "Phòng tự học A2.503",
       "building": "A2",
       "floor": 5,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "A2.504",
-      "name": "Phòng học A2.504",
+      "name": "Phòng thực hành / Nhóm A2.504",
       "building": "A2",
       "floor": 5,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A2.505",
-      "name": "Phòng học A2.505",
+      "name": "Phòng thực hành / Nhóm A2.505",
       "building": "A2",
       "floor": 5,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A2.601",
-      "name": "Giảng đường A2.601",
+      "name": "Giảng đường lớn A2.601",
       "building": "A2",
       "floor": 6,
       "capacity": 120,
-      "category": "Giảng đường"
+      "category": "Giảng đường lớn"
     },
     {
       "id": "A2.602",
-      "name": "Phòng Lab A2.602",
+      "name": "Phòng thảo luận A2.602",
       "building": "A2",
       "floor": 6,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "A2.603",
-      "name": "Phòng học A2.603",
+      "name": "Phòng tự học A2.603",
       "building": "A2",
       "floor": 6,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "A2.604",
-      "name": "Phòng học A2.604",
+      "name": "Phòng thực hành / Nhóm A2.604",
       "building": "A2",
       "floor": 6,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A2.605",
-      "name": "Phòng học A2.605",
+      "name": "Phòng thực hành / Nhóm A2.605",
       "building": "A2",
       "floor": 6,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A2.701",
-      "name": "Giảng đường A2.701",
+      "name": "Giảng đường lớn A2.701",
       "building": "A2",
       "floor": 7,
-      "capacity": 140,
-      "category": "Giảng đường"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "A2.702",
-      "name": "Phòng Lab A2.702",
+      "name": "Phòng thảo luận A2.702",
       "building": "A2",
       "floor": 7,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "A2.703",
-      "name": "Phòng học A2.703",
+      "name": "Phòng tự học A2.703",
       "building": "A2",
       "floor": 7,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "A2.704",
-      "name": "Phòng học A2.704",
+      "name": "Phòng thực hành / Nhóm A2.704",
       "building": "A2",
       "floor": 7,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "A2.705",
-      "name": "Phòng học A2.705",
+      "name": "Phòng thực hành / Nhóm A2.705",
       "building": "A2",
       "floor": 7,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "B.101",
-      "name": "Giảng đường B.101",
+      "name": "Giảng đường lớn B.101",
       "building": "B",
       "floor": 1,
       "capacity": 120,
-      "category": "Giảng đường"
+      "category": "Giảng đường lớn"
     },
     {
       "id": "B.102",
-      "name": "Phòng Lab B.102",
+      "name": "Phòng thảo luận B.102",
       "building": "B",
       "floor": 1,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "B.103",
-      "name": "Phòng học B.103",
+      "name": "Phòng tự học B.103",
       "building": "B",
       "floor": 1,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "B.104",
-      "name": "Phòng học B.104",
+      "name": "Phòng thực hành / Nhóm B.104",
       "building": "B",
       "floor": 1,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "B.201",
-      "name": "Giảng đường B.201",
+      "name": "Giảng đường lớn B.201",
       "building": "B",
       "floor": 2,
-      "capacity": 140,
-      "category": "Giảng đường"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "B.202",
-      "name": "Phòng Lab B.202",
+      "name": "Phòng thảo luận B.202",
       "building": "B",
       "floor": 2,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "B.203",
-      "name": "Phòng học B.203",
+      "name": "Phòng tự học B.203",
       "building": "B",
       "floor": 2,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "B.204",
-      "name": "Phòng học B.204",
+      "name": "Phòng thực hành / Nhóm B.204",
       "building": "B",
       "floor": 2,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "B.301",
-      "name": "Giảng đường B.301",
+      "name": "Giảng đường lớn B.301",
       "building": "B",
       "floor": 3,
-      "capacity": 150,
-      "category": "Giảng đường"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "B.302",
-      "name": "Phòng Lab B.302",
+      "name": "Phòng thảo luận B.302",
       "building": "B",
       "floor": 3,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "B.303",
-      "name": "Phòng học B.303",
+      "name": "Phòng tự học B.303",
       "building": "B",
       "floor": 3,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "B.304",
-      "name": "Phòng học B.304",
+      "name": "Phòng thực hành / Nhóm B.304",
       "building": "B",
       "floor": 3,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "B.401",
-      "name": "Giảng đường B.401",
+      "name": "Giảng đường lớn B.401",
       "building": "B",
       "floor": 4,
-      "capacity": 80,
-      "category": "Giảng đường"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "B.402",
-      "name": "Phòng Lab B.402",
+      "name": "Phòng thảo luận B.402",
       "building": "B",
       "floor": 4,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "B.403",
-      "name": "Phòng học B.403",
+      "name": "Phòng tự học B.403",
       "building": "B",
       "floor": 4,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "B.404",
-      "name": "Phòng học B.404",
+      "name": "Phòng thực hành / Nhóm B.404",
       "building": "B",
       "floor": 4,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "B.501",
-      "name": "Giảng đường B.501",
+      "name": "Giảng đường lớn B.501",
       "building": "B",
       "floor": 5,
-      "capacity": 100,
-      "category": "Giảng đường"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "B.502",
-      "name": "Phòng Lab B.502",
+      "name": "Phòng thảo luận B.502",
       "building": "B",
       "floor": 5,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "B.503",
-      "name": "Phòng học B.503",
+      "name": "Phòng tự học B.503",
       "building": "B",
       "floor": 5,
-      "capacity": 30,
-      "category": "Phòng học"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "B.504",
-      "name": "Phòng học B.504",
+      "name": "Phòng thực hành / Nhóm B.504",
       "building": "B",
       "floor": 5,
-      "capacity": 35,
-      "category": "Phòng học"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "LA1.101",
-      "name": "Phòng Lab LA1.101",
+      "name": "Giảng đường lớn LA1.101",
       "building": "LA1",
       "floor": 1,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "LA1.102",
-      "name": "Phòng Lab LA1.102",
+      "name": "Phòng thảo luận LA1.102",
       "building": "LA1",
       "floor": 1,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "LA1.103",
-      "name": "Phòng Lab LA1.103",
+      "name": "Phòng tự học LA1.103",
       "building": "LA1",
       "floor": 1,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "LA1.104",
-      "name": "Phòng Lab LA1.104",
+      "name": "Phòng thực hành / Nhóm LA1.104",
       "building": "LA1",
       "floor": 1,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "LA1.201",
-      "name": "Phòng Lab LA1.201",
+      "name": "Giảng đường lớn LA1.201",
       "building": "LA1",
       "floor": 2,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "LA1.202",
-      "name": "Phòng Lab LA1.202",
+      "name": "Phòng thảo luận LA1.202",
       "building": "LA1",
       "floor": 2,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "LA1.203",
-      "name": "Phòng Lab LA1.203",
+      "name": "Phòng tự học LA1.203",
       "building": "LA1",
       "floor": 2,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "LA1.204",
-      "name": "Phòng Lab LA1.204",
+      "name": "Phòng thực hành / Nhóm LA1.204",
       "building": "LA1",
       "floor": 2,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "LA1.301",
-      "name": "Phòng Lab LA1.301",
+      "name": "Giảng đường lớn LA1.301",
       "building": "LA1",
       "floor": 3,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "LA1.302",
-      "name": "Phòng Lab LA1.302",
+      "name": "Phòng thảo luận LA1.302",
       "building": "LA1",
       "floor": 3,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "LA1.303",
-      "name": "Phòng Lab LA1.303",
+      "name": "Phòng tự học LA1.303",
       "building": "LA1",
       "floor": 3,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "LA1.304",
-      "name": "Phòng Lab LA1.304",
+      "name": "Phòng thực hành / Nhóm LA1.304",
       "building": "LA1",
       "floor": 3,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "LA1.401",
-      "name": "Phòng Lab LA1.401",
+      "name": "Giảng đường lớn LA1.401",
       "building": "LA1",
       "floor": 4,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "LA1.402",
-      "name": "Phòng Lab LA1.402",
+      "name": "Phòng thảo luận LA1.402",
       "building": "LA1",
       "floor": 4,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "LA1.403",
-      "name": "Phòng Lab LA1.403",
+      "name": "Phòng tự học LA1.403",
       "building": "LA1",
       "floor": 4,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "LA1.404",
-      "name": "Phòng Lab LA1.404",
+      "name": "Phòng thực hành / Nhóm LA1.404",
       "building": "LA1",
       "floor": 4,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "LA2.101",
-      "name": "Phòng Lab LA2.101",
+      "name": "Giảng đường lớn LA2.101",
       "building": "LA2",
       "floor": 1,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "LA2.102",
-      "name": "Phòng Lab LA2.102",
+      "name": "Phòng thảo luận LA2.102",
       "building": "LA2",
       "floor": 1,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "LA2.103",
-      "name": "Phòng Lab LA2.103",
+      "name": "Phòng tự học LA2.103",
       "building": "LA2",
       "floor": 1,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "LA2.104",
-      "name": "Phòng Lab LA2.104",
+      "name": "Phòng thực hành / Nhóm LA2.104",
       "building": "LA2",
       "floor": 1,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "LA2.201",
-      "name": "Phòng Lab LA2.201",
+      "name": "Giảng đường lớn LA2.201",
       "building": "LA2",
       "floor": 2,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "LA2.202",
-      "name": "Phòng Lab LA2.202",
+      "name": "Phòng thảo luận LA2.202",
       "building": "LA2",
       "floor": 2,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "LA2.203",
-      "name": "Phòng Lab LA2.203",
+      "name": "Phòng tự học LA2.203",
       "building": "LA2",
       "floor": 2,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "LA2.204",
-      "name": "Phòng Lab LA2.204",
+      "name": "Phòng thực hành / Nhóm LA2.204",
       "building": "LA2",
       "floor": 2,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "LA2.301",
-      "name": "Phòng Lab LA2.301",
+      "name": "Giảng đường lớn LA2.301",
       "building": "LA2",
       "floor": 3,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "LA2.302",
-      "name": "Phòng Lab LA2.302",
+      "name": "Phòng thảo luận LA2.302",
       "building": "LA2",
       "floor": 3,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "LA2.303",
-      "name": "Phòng Lab LA2.303",
+      "name": "Phòng tự học LA2.303",
       "building": "LA2",
       "floor": 3,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "LA2.304",
-      "name": "Phòng Lab LA2.304",
+      "name": "Phòng thực hành / Nhóm LA2.304",
       "building": "LA2",
       "floor": 3,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     },
     {
       "id": "LA2.401",
-      "name": "Phòng Lab LA2.401",
+      "name": "Giảng đường lớn LA2.401",
       "building": "LA2",
       "floor": 4,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 120,
+      "category": "Giảng đường lớn"
     },
     {
       "id": "LA2.402",
-      "name": "Phòng Lab LA2.402",
+      "name": "Phòng thảo luận LA2.402",
       "building": "LA2",
       "floor": 4,
-      "capacity": 20,
-      "category": "Phòng Lab"
+      "capacity": 12,
+      "category": "Phòng thảo luận"
     },
     {
       "id": "LA2.403",
-      "name": "Phòng Lab LA2.403",
+      "name": "Phòng tự học LA2.403",
       "building": "LA2",
       "floor": 4,
-      "capacity": 25,
-      "category": "Phòng Lab"
+      "capacity": 8,
+      "category": "Phòng tự học"
     },
     {
       "id": "LA2.404",
-      "name": "Phòng Lab LA2.404",
+      "name": "Phòng thực hành / Nhóm LA2.404",
       "building": "LA2",
       "floor": 4,
-      "capacity": 30,
-      "category": "Phòng Lab"
+      "capacity": 6,
+      "category": "Phòng thực hành / Nhóm"
     }
   ],
   "bookings": [
     {
-      "id": "BKOL2D",
-      "studentId": "ITITIU25055",
-      "studentEmail": "ititiu25055@student.hcmiu.edu.vn",
-      "roomId": "A1.103",
-      "date": "2026-10-23",
-      "startTime": "15:00",
-      "endTime": "16:00",
-      "memberCount": 1,
-      "status": "COMPLETED",
-      "createdAt": "2026-10-23T06:05:17.210Z"
-    },
-    {
-      "id": "BK52SS",
-      "studentId": "ITITIU25055",
-      "studentEmail": "ititiu25055@student.hcmiu.edu.vn",
-      "roomId": "A1.301",
-      "date": "2026-10-23",
-      "startTime": "15:00",
-      "endTime": "16:00",
-      "memberCount": 3,
-      "status": "CANCELLED",
-      "createdAt": "2026-10-23T06:03:51.561Z"
-    },
-    {
-      "id": "BKJ2ZS",
-      "studentId": "ITITIU25055",
-      "studentEmail": "ititiu25055@student.hcmiu.edu.vn",
-      "roomId": "B.204",
-      "date": "2026-10-23",
-      "startTime": "14:00",
-      "endTime": "15:00",
-      "memberCount": 1,
-      "status": "CANCELLED",
-      "createdAt": "2026-10-23T06:02:16.159Z"
-    },
-    {
-      "id": "BKP13R",
-      "studentId": "ITITWE25002",
-      "studentEmail": "ititwe25002@student.hcmiu.edu.vn",
-      "roomId": "A1.201",
-      "date": "2026-10-23",
-      "startTime": "15:00",
-      "endTime": "16:00",
-      "memberCount": 1,
-      "status": "CANCELLED",
-      "createdAt": "2026-10-23T05:43:04.549Z"
-    },
-    {
-      "id": "BKN6KB",
-      "studentId": "ITITIU25055",
-      "studentEmail": "ititiu25055@student.hcmiu.edu.vn",
+      "id": "BKOQB4",
+      "studentId": "ITITIU25032",
+      "studentEmail": "ITITIU25032@student.hcmiu.edu.vn",
       "roomId": "A1.104",
       "date": "2026-10-23",
-      "startTime": "10:00",
-      "endTime": "13:00",
-      "memberCount": 34,
-      "status": "COMPLETED",
-      "createdAt": "2026-10-23T04:42:36.560Z"
-    },
-    {
-      "id": "BKH87J",
-      "studentId": "ITITIU25055",
-      "studentEmail": "ititiu25055@student.hcmiu.edu.vn",
-      "roomId": "A1.201",
-      "date": "2026-10-23",
-      "startTime": "10:00",
-      "endTime": "13:00",
-      "memberCount": 34,
-      "status": "COMPLETED",
-      "createdAt": "2026-10-23T04:40:35.785Z"
-    },
-    {
-      "id": "BK2LF5",
-      "studentId": "ITITIU25055",
-      "studentEmail": "ititiu25055@student.hcmiu.edu.vn",
-      "roomId": "A1.204",
-      "date": "2026-10-23",
-      "startTime": "14:00",
-      "endTime": "16:00",
-      "memberCount": 7,
-      "status": "COMPLETED",
-      "createdAt": "2026-10-23T04:20:24.133Z"
-    },
-    {
-      "id": "BKKYQK",
-      "studentId": "ITITIU25055",
-      "studentEmail": "ititiu25055@student.hcmiu.edu.vn",
-      "roomId": "A1.103",
-      "date": "2026-11-04",
       "startTime": "09:00",
-      "endTime": "11:00",
-      "memberCount": 7,
+      "endTime": "10:10",
+      "memberCount": 5,
       "status": "CANCELLED",
-      "createdAt": "2026-10-23T04:19:16.660Z"
+      "createdAt": "2026-10-22T13:02:46.241Z"
+    },
+    {
+      "id": "BKFO81",
+      "studentId": "ITITIU25032",
+      "studentEmail": "ITITIU25032@student.hcmiu.edu.vn",
+      "roomId": "A1.104",
+      "date": "2026-10-23",
+      "startTime": "08:00",
+      "endTime": "10:00",
+      "memberCount": 5,
+      "status": "CANCELLED",
+      "createdAt": "2026-10-22T12:43:30.719Z"
     }
   ],
   "penalties": {
-    "ITITIU25055": {
-      "studentId": "ITITIU25055",
-      "noShowCount": 1,
-      "lateCheckoutCount": 0,
-      "banUntil": null,
-      "isBannedPermanent": 0
-    },
     "ADMIN001": {
       "studentId": "ADMIN001",
       "noShowCount": 0,
       "lateCheckoutCount": 0,
       "banUntil": null,
       "isBannedPermanent": 0
-    },
-    "ITITWE25002": {
-      "studentId": "ITITWE25002",
-      "noShowCount": 2,
-      "lateCheckoutCount": 0,
-      "banUntil": "2026-11-22T05:59:28.159Z",
-      "isBannedPermanent": 0
     }
   },
-  "penalty_logs": [
-    {
-      "id": 33,
-      "studentId": "ITITIU25055",
-      "date": "13:04:17 23/10/2026",
-      "reason": "[Lần 1] Cảnh cáo: Không bấm nhận phòng A1.301 sau 10 phút."
-    },
-    {
-      "id": 32,
-      "studentId": "ITITIU25055",
-      "date": "13:02:37 23/10/2026",
-      "reason": "Hủy đặt phòng B.204 (Lần 2/3 trong ngày)"
-    },
-    {
-      "id": 30,
-      "studentId": "ITITWE25002",
-      "date": "12:44:28 23/10/2026",
-      "reason": "[Lần 1] Cảnh cáo: Không bấm nhận phòng A1.201 sau 10 phút."
-    },
-    {
-      "id": 29,
-      "studentId": "ITITIU25055",
-      "date": "12:19:21 23/10/2026",
-      "reason": "[Admin Devpage] Đã mở khóa/gỡ ban tài khoản."
-    },
-    {
-      "id": 28,
-      "studentId": "ITITIU25055",
-      "date": "09:00:00 23/10/2026",
-      "reason": "Hủy đặt phòng tương lai A1.103 (Lần 1/3 trong ngày)"
-    }
-  ],
+  "penalty_logs": [],
   "room_locks": []
 }
