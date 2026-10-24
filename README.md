@@ -20,9 +20,10 @@
 * [II. Lý Do Cần Giải Quyết](#ii-lý-do-cần-giải-quyết)
 * [III. Đối Tượng Sử Dụng ](#iii-đối-tượng-sử-dụng)
 * [IV. Ý Tưởng Giải Quyết & Tính Năng Cốt Lõi](#iv-ý-tưởng-giải-quyết--tính-năng-cốt-lõi)
-* [V. Chi Tiết Giao Diện & Luồng Hoạt Động (UI/UX Flow)](#v-chi-tiết-giao-diện--luồng-hoạt-động-uiux-flow)
-* [VI. Trang Quản Trị Hệ Thống - Admin Control Center](#vi-trang-quản-trị-hệ-thống--admin-control-center-devpage)
-* [VII. Đánh Giá Hiệu Quả & Hướng Phát Triển](#vii-đánh-giá-hiệu-quả--hướng-phát-triển)
+* [V. Cấu Trúc Dự Án (Project Structure)](#v-cấu-trúc-dự-án-project-structure)
+* [VI. Chi Tiết Giao Diện & Luồng Hoạt Động (UI/UX Flow)](#vi-chi-tiết-giao-diện--luồng-hoạt-động-uiux-flow)
+* [VII. Trang Quản Trị Hệ Thống - Admin Control Center](#vii-trang-quản-trị-hệ-thống--admin-control-center-devpage)
+* [VIII. Đánh Giá Hiệu Quả & Hướng Phát Triển](#viii-đánh-giá-hiệu-quả--hướng-phát-triển)
 
 ---
 
@@ -81,7 +82,46 @@ Dự án cung cấp giải pháp **Website hỗ trợ đăng ký online thông m
 
 ---
 
-## V. Chi Tiết Giao Diện & Luồng Hoạt Động (UI/UX Flow)
+
+## V. Cấu Trúc Dự Án 
+
+Dự án được thiết kế theo kiến trúc **Client-Server (Monorepo)** phân tách rõ ràng giữa Giao diện Frontend (`client`) và Cơ sở dữ liệu / API Backend (`server`).
+
+```text
+ROOMFINDING_GDOC/
+├── client/                     # Frontend Application (React + Vite + Tailwind CSS)
+│   ├── public/                 # Static assets công khai
+│   ├── src/                    # Mã nguồn chính của Frontend
+│   │   ├── assets/             # Hình ảnh, icon, font quy định giao diện
+│   │   ├── components/         # Các Reusable Components (Card, Modal, Navbar, Timeline,...)
+│   │   ├── pages/              # Các trang giao diện chính
+│   │   │   ├── HomePage.jsx    # Trang chủ & Đăng nhập
+│   │   │   └── RoomsPage.jsx   # Trang danh sách phòng, đặt phòng & admin
+│   │   ├── services/           # Quản lý giao tiếp API với server
+│   │   │   └── api.js          # Khởi tạo Axios / Fetch gọi Backend API
+│   │   ├── App.jsx             # React Root Component & Routing
+│   │   ├── App.css / index.css # Global styles & Tailwind Directives
+│   │   └── main.jsx            # Entry point chính của ứng dụng React
+│   ├── tailwind.config.js      # Cấu hình Tailwind CSS
+│   ├── vite.config.js          # Cấu hình Vite Build Tool
+│   └── package.json            # Thư viện phụ thuộc Frontend
+│
+└── server/                     # Backend Application (Node.js + Express + SQLite)
+    ├── src/                    # Mã nguồn chính Backend
+    │   ├── data/               # Cơ sở dữ liệu SQLite & File cấu hình
+    │   │   ├── database.js     # Khởi tạo kết nối CSDL
+    │   │   ├── sqlite.js       # Script tương tác / query dữ liệu
+    │   │   └── roompeek.sqlite # CSDL SQLite lưu trữ người dùng & lịch đặt phòng
+    │   ├── services/           # Xử lý Logic Nghiệp Vụ (Business Logic)
+    │   │   └── roomService.js  # Xử lý logic đặt phòng, tính penalty, check-in/out
+    │   └── server.js           # Express Server Entry Point (API Endpoints)
+    ├── package.json            # Thư viện phụ thuộc Backend
+    └── README.md               # Tài liệu hướng dẫn sử dụng dự án
+```
+
+---
+
+## VI. Chi Tiết Giao Diện & Luồng Hoạt Động (UI/UX Flow)
 
 ### Luồng Hoạt Động Cấu Trúc (Flowcharts)
 ```text
@@ -96,7 +136,7 @@ Dự án cung cấp giải pháp **Website hỗ trợ đăng ký online thông m
 
 ---
 
-### 1. Màn Hình Trang Chủ & Đăng Nhập
+### 1. Màn Hình Trang Chủ & Đăng Nhập 
 * **Mô tả:** Màn hình chính giúp sinh viên đăng nhập hệ thống bằng email sinh viên trường Đại học Quốc tế.
 * **Tính năng:** Đăng nhập, Đăng ký tài khoản, xem đồng hồ thời gian thực.
 
@@ -165,11 +205,103 @@ Dự án cung cấp giải pháp **Website hỗ trợ đăng ký online thông m
 
 ---
 
-### 5. Quản Lý Phòng Đang Mượn & Quy Tắc Chế Tài
+### 5. Quản Lý Phòng Đang Mượn & Quy Tắc Chế Tài 
 * **Mô tả:** Nơi sinh viên theo dõi phòng mượn hiện tại, thực hiện **Xác nhận đã mượn phòng (Check-in)** hoặc **Xác nhận trả phòng (Check-out)**.
 * **Bảng Quy tắc chế tài (Penalty Rules):**
   * **Không nhận phòng (>10p):** Cảnh cáo $\rightarrow$ Khóa 30 ngày $\rightarrow$ Khóa vĩnh viễn.
   * **Trả phòng trễ:** Cho phép trả phòng trước/sau giờ kết thúc 30 phút. Quá 30 phút phạt theo các mức: Cảnh cáo $\rightarrow$ Khóa 7 ngày $\rightarrow$ Khóa 30 ngày $\rightarrow$ Cấm vĩnh viễn.
+  * **Hủy phòng:** Tối đa 3 lần miễn phí/ngày. Từ lần thứ 4 tạm cấm đặt 10 phút.
+
+<br> 
+<p align="center"> 
+  <img src="https://raw.githubusercontent.com/chitam3374-cyber/ROOMFINDING_GDOC/Image-for-report/Image/booked.png"  
+       alt="Màn hình quản lý phòng đang mượn"  
+       width="70%"  
+       style="border-radius: 30px; overflow: hidden;" /> 
+  <br> 
+  <ins><i>Giao diện quản lý phòng mượn và bảng theo dõi quy tắc vi phạm</i></ins> 
+</p> 
+<br>
+
+---
+
+### 6. Biểu Đồ Timeline Trực Quan Lịch Phòng 
+* **Mô tả:** Bảng theo dõi tình trạng khả dụng toàn bộ các phòng theo mốc giờ thực tế từ `08:00` đến `17:00`.
+* **Mã màu:** Đoạn xanh đại diện cho phòng Trống (Có thể đặt), đoạn đỏ đại diện cho phòng Đã được đặt.
+
+<br> 
+<p align="center"> 
+  <img src="https://raw.githubusercontent.com/chitam3374-cyber/ROOMFINDING_GDOC/Image-for-report/Image/schedule.png"  
+       alt="Màn hình dải thời gian phòng học"  
+       width="70%"  
+       style="border-radius: 30px; overflow: hidden;" /> 
+  <br> 
+  <ins><i>Sơ đồ dải thời gian trạng thái phòng theo giờ trong ngày</i></ins> 
+</p> 
+<br>
+
+<br> 
+<p align="center"> 
+  <img src="https://raw.githubusercontent.com/chitam3374-cyber/ROOMFINDING_GDOC/Image-for-report/Image/short_schedule.png"  
+       alt="Lịch theo dõi phòng rút gọn"  
+       width="70%"  
+       style="border-radius: 30px; overflow: hidden;" /> 
+  <br> 
+  <ins><i>Giao diện rút gọn theo dõi lịch phòng trống nhanh</i></ins> 
+</p> 
+<br>
+
+---
+
+## VII. Trang Quản Trị Hệ Thống - Admin Control Center 
+
+Giao diện quản trị dành riêng cho Ban Quản lý Phòng học để điều phối toàn bộ tài khoản và hoạt động mượn phòng trong campus.
+
+### 1. Quản Lý Lịch Phòng Real-Time 
+* **Mô tả:** Theo dõi danh sách phòng theo từng trạng thái chi tiết: `BOOKED` (Đã đặt), `CHECKED_IN` (Đang sử dụng), `COMPLETED` (Đã hoàn tất), hoặc `LOCKED` (Khóa/Bảo trì).
+* **Công cụ:** Cho phép chuyển đổi giữa các ngày và lọc phòng theo từng Tòa nhà.
+
+<br> 
+<p align="center"> 
+  <img src="https://raw.githubusercontent.com/chitam3374-cyber/ROOMFINDING_GDOC/Image-for-report/Image/admin_room.png"  
+       alt="Trang quản trị lịch phòng Admin"  
+       width="70%"  
+       style="border-radius: 30px; overflow: hidden;" /> 
+  <br> 
+  <ins><i>Trang Quản Trị Hệ Thống - Quản lý lịch phòng chi tiết và khóa phòng bảo trì</i></ins> 
+</p> 
+<br>
+
+---
+
+### 2. Quản Lý Tài Khoản, Phân Quyền & Gỡ Ban 
+* **Phân quyền (Roles):** Chuyển đổi linh hoạt giữa quyền `Student` và `Admin`.
+* **Xử lý vi phạm:** Xem chi tiết số lần vi phạm (No-Show, Trả trễ) và trạng thái Chế tài của từng sinh viên. Hỗ trợ Admin gỡ cấm vi phạm khi có lý do chính đáng.
+
+<br> 
+<p align="center"> 
+  <img src="https://raw.githubusercontent.com/chitam3374-cyber/ROOMFINDING_GDOC/Image-for-report/Image/admin_acc.png"  
+       alt="Trang quản lý tài khoản Admin"  
+       width="70%"  
+       style="border-radius: 30px; overflow: hidden;" /> 
+  <br> 
+  <ins><i>Trang Quản Trị Hệ Thống - Phân quyền tài khoản và gỡ phạt sinh viên</i></ins> 
+</p> 
+<br>
+
+---
+
+## VIII. Đánh Giá Hiệu Quả & Hướng Phát Triển
+
+### Hiệu Quả Đạt Được
+* **Tối ưu hóa thời gian:** Giảm hơn 80% thời gian đăng ký và phê duyệt mượn phòng.
+* **Cải thiện tỷ lệ lãng phí phòng:** Minh bạch hóa thông tin giúp gia tăng công suất sử dụng phòng học nhóm.
+* **Tự động hóa quản lý:** Bảng chế tài tự động giúp giảm áp lực giám sát cho bộ phận quản lý.
+
+### Hướng Phát Triển Tiếp Theo
+* Tích hợp mã QR Code tại mỗi cửa phòng để sinh viên quét mã Check-in / Check-out tự động.
+* Phát triển tính năng gửi thông báo tự động qua Email / TelegramBot nhắc giờ trả phòng.
+* Áp dụng AI dự đoán nhu cầu và gợi ý phòng phù hợp cho sinh viên dựa trên thói quen sử dụng.ngày $\rightarrow$ Cấm vĩnh viễn.
   * **Hủy phòng:** Tối đa 3 lần miễn phí/ngày. Từ lần thứ 4 tạm cấm đặt 10 phút.
 
 <br> 
